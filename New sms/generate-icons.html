@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Generate Icons</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #f0f3fb;
+        }
+
+        .icon-preview {
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        canvas {
+            border: 1px solid #ddd;
+            border-radius: 12px;
+        }
+
+        button {
+            background: #2d60ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .download-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+        }
+
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🎨 Generate PWA Icons for Starc Innovations</h1>
+    <p>This page will generate all the icons you need. Click each button to download the icon.</p>
+
+    <div id="icons-container"></div>
+
+    <div class="download-section">
+        <h2>📦 Download All Icons</h2>
+        <button onclick="downloadAllIcons()">Download All Icons (ZIP)</button>
+        <button onclick="copyManifestCode()">Copy Updated Manifest Code</button>
+
+        <h3>📋 Manifest Icons Code (Copy this to your manifest.json)</h3>
+        <pre id="manifest-code"></pre>
+    </div>
+
+    <script>
+        const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+
+        function createIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#2d60ff');
+            gradient.addColorStop(1, '#1a3faa');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+
+            // Draw circle overlay
+            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, size * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw letter S
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${size * 0.5}px "Inter", "Arial", sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('S', size / 2, size / 2);
+
+            return canvas;
+        }
+
+        function downloadIcon(size) {
+            const canvas = createIcon(size);
+            const link = document.createElement('a');
+            link.download = `icon-${size}x${size}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function downloadAllIcons() {
+            sizes.forEach(size => {
+                setTimeout(() => downloadIcon(size), size * 10);
+            });
+            alert('Downloading all icons. Please wait...');
+        }
+
+        function generateManifestCode() {
+            const iconEntries = sizes.map(size => `
+    {
+      "src": "/icons/icon-${size}x${size}.png",
+      "sizes": "${size}x${size}",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }`).join(',');
+
+            return `"icons": [${iconEntries}
+  ]`;
+        }
+
+        function copyManifestCode() {
+            const code = generateManifestCode();
+            navigator.clipboard.writeText(code);
+            alert('Manifest icons code copied to clipboard!');
+        }
+
+        // Display icons
+        const container = document.getElementById('icons-container');
+        sizes.forEach(size => {
+            const canvas = createIcon(size);
+            const div = document.createElement('div');
+            div.className = 'icon-preview';
+            div.innerHTML = `
+                <canvas width="${size}" height="${size}" style="width: 80px; height: 80px;"></canvas>
+                <div>${size}x${size}</div>
+                <button onclick="downloadIcon(${size})">Download</button>
+            `;
+            div.querySelector('canvas').getContext('2d').drawImage(canvas, 0, 0);
+            container.appendChild(div);
+        });
+
+        document.getElementById('manifest-code').textContent = generateManifestCode();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Starc Edu">
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232d60ff'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3ES%3C/text%3E%3C/svg%3E">
+    <meta name="theme-color" content="#2d60ff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Fees Management | Starc Innovations</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* Fees specific styles */
+        .fees-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 40px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+            background: white;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .filter-btn.active {
+            background: #2d60ff;
+            color: white;
+            border-color: #2d60ff;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .clear-all-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .clear-all-btn:hover {
+            background: #c0392b;
+            transform: scale(1.02);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 550px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eef2ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .form-group input[type="text"].amount-input {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        .form-group input[type="text"].amount-input::-webkit-outer-spin-button,
+        .form-group input[type="text"].amount-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 40px;
+            color: white;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .confirm-modal {
+            text-align: center;
+        }
+
+        .confirm-modal .warning-icon {
+            font-size: 3rem;
+            color: #e74c3c;
+            margin-bottom: 1rem;
+        }
+
+        .confirm-modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1.5rem 0 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .payment-status {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .status-paid {
+            background: #e0f0ea;
+            color: #0d5936;
+        }
+
+        .status-partial {
+            background: #fef5e8;
+            color: #a75800;
+        }
+
+        .status-unpaid {
+            background: #fee8e6;
+            color: #c0392b;
+        }
+
+        .amount {
+            font-weight: 600;
+        }
+
+        .sync-notice {
+            background: #e8f0fe;
+            border-left: 4px solid #2d60ff;
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .fees-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        /* PDF Report Styles */
+        .pdf-report {
+            padding: 20px;
+            font-family: 'Inter', sans-serif;
+            background: white;
+        }
+
+        .pdf-report h1 {
+            color: #2d60ff;
+            margin-bottom: 5px;
+        }
+
+        .pdf-report h2 {
+            color: #1e2b4f;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .pdf-report .summary-box {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+        }
+
+        .pdf-report table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .pdf-report th {
+            background: #2d60ff;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .pdf-report td {
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+        }
+
+        .pdf-report .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+            color: #888;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <h2><i class="fas fa-graduation-cap"></i> Starc Innovations · edu</h2>
+        <ul>
+            <li><a href="index.html"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="students.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+            <li><a href="teachers.html"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
+            <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+            <li><a href="exams.html"><i class="fas fa-pen-to-square"></i> Exams</a></li>
+            <li class="active"><a href="fees.html"><i class="fas fa-coins"></i> Fees</a></li>
+            <li><a href="timetable.html"><i class="fas fa-table"></i> Timetable</a></li>
+            <li><a href="library.html"><i class="fas fa-book-open"></i> Library</a></li>
+            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <li><a href="settings.html"><i class="fas fa-sliders"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <i class="fas fa-circle" style="color:#3fe67b; font-size:0.5rem;"></i> admin · online
+        </div>
+        <button id="installBtn" onclick="installApp()"
+            style="display: none; background: #2d60ff; color: white; border: none; padding: 10px; border-radius: 40px; margin: 10px 0; cursor: pointer; width: 100%;">
+            <i class="fas fa-download"></i> Install App
+        </button>
+    </div>
+
+    <div class="main-panel">
+        <div class="topbar">
+            <div class="page-title">
+                <h1><i class="fas fa-coins"></i> Fees Management</h1>
+            </div>
+            <div class="profile-pill">
+                <i class="fas fa-user-shield"></i> Bursar
+            </div>
+        </div>
+
+        <!-- Sync Notice -->
+        <div class="sync-notice">
+            <i class="fas fa-sync-alt" style="color: #2d60ff;"></i>
+            <span>Automatically synced with Students page. All active students have an unpaid balance of <strong>MWK
+                    425,000</strong> by default.</span>
+            <button class="btn-sm btn-outline" onclick="syncWithStudents()" style="margin-left: auto;">
+                <i class="fas fa-refresh"></i> Sync Now
+            </button>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="fees-stats">
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-school"></i> Total Students</div>
+                <div class="stat-number" id="totalStudents">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-sack-dollar"></i> Total Expected</div>
+                <div class="stat-number" id="totalExpected">MWK0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-check-circle"></i> Total Collected</div>
+                <div class="stat-number" id="totalCollected">MWK0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-exclamation-triangle"></i> Outstanding</div>
+                <div class="stat-number" id="totalOutstanding">MWK0</div>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="🔍 Search by student name, form, or phone..."
+                onkeyup="filterFees()">
+            <button class="btn-primary" onclick="openAddPaymentModal()">
+                <i class="fas fa-plus"></i> Record Payment
+            </button>
+            <button class="btn-outline" onclick="exportFeesToCSV()">
+                <i class="fas fa-download"></i> Export CSV
+            </button>
+            <button class="btn-outline" onclick="exportFeesToPDF()">
+                <i class="fas fa-file-pdf"></i> Export PDF
+            </button>
+            <button class="clear-all-btn" onclick="openClearAllConfirm()">
+                <i class="fas fa-trash-alt"></i> Clear All
+            </button>
+        </div>
+
+        <div class="filter-group">
+            <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">📊 All Students</button>
+            <button class="filter-btn" data-filter="paid" onclick="setFilter('paid')">✅ Fully Paid</button>
+            <button class="filter-btn" data-filter="partial" onclick="setFilter('partial')">⚠️ Partial Payment</button>
+            <button class="filter-btn" data-filter="unpaid" onclick="setFilter('unpaid')">❌ Unpaid</button>
+        </div>
+
+        <!-- Fees Table -->
+        <div class="section-header">
+            <h2><i class="fas fa-list"></i> Fee Records</h2>
+            <button class="btn-outline" onclick="generateFeeReport()">
+                <i class="fas fa-file-pdf"></i> Generate Detailed Report
+            </button>
+        </div>
+        <div class="glass-table">
+            <div style="overflow-x: auto;">
+                <table id="feesTable">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Form</th>
+                            <th>Total Fee (MWK)</th>
+                            <th>Paid (MWK)</th>
+                            <th>Balance (MWK)</th>
+                            <th>Status</th>
+                            <th>Last Payment</th>
+                            <th>Actions</th>
+                    </thead>
+                    <tbody id="feesTableBody">
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 3rem;">
+                                <div class="empty-state">
+                                    <i class="fas fa-coins"></i>
+                                    <p>No fee records yet</p>
+                                    <p style="font-size: 0.85rem; color: #aaa;">Click "Sync Now" to import students from
+                                        Students page</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Payment History -->
+        <div class="section-title">
+            <h2><i class="fas fa-history"></i> Payment History</h2>
+        </div>
+        <div class="glass-table">
+            <div style="overflow-x: auto;">
+                <table id="paymentHistoryTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Student</th>
+                            <th>Amount (MWK)</th>
+                            <th>Payment Method</th>
+                            <th>Receipt No</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentHistoryBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem;">
+                                <i class="fas fa-receipt"></i> No payment records yet
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ FEES DATA ============
+        let students = [];
+        let feeRecords = [];
+        let payments = [];
+        let currentFilter = 'all';
+
+        const TOTAL_FEE_PER_STUDENT = 425000;
+
+        // Load students from Students page (localStorage)
+        function loadStudentsFromStorage() {
+            const saved = localStorage.getItem('students_data');
+            if (saved) {
+                students = JSON.parse(saved);
+            } else {
+                students = [];
+                localStorage.setItem('students_data', JSON.stringify(students));
+            }
+            students = students.filter(s => s.status === 'active');
+            document.getElementById('totalStudents').textContent = students.length;
+            return students;
+        }
+
+        // Sync fee records with students
+        function syncFeeRecordsWithStudents() {
+            if (students.length === 0) {
+                showToast('No students found. Add students first in Students page.', 'error');
+                return;
+            }
+
+            const activeStudentIds = students.map(s => s.id);
+            feeRecords = feeRecords.filter(record => activeStudentIds.includes(record.studentId));
+
+            let addedCount = 0;
+            students.forEach(student => {
+                const existingRecord = feeRecords.find(r => r.studentId === student.id);
+                if (!existingRecord) {
+                    feeRecords.push({
+                        studentId: student.id,
+                        studentName: student.name,
+                        form: student.form,
+                        totalFee: TOTAL_FEE_PER_STUDENT,
+                        paid: 0,
+                        balance: TOTAL_FEE_PER_STUDENT,
+                        lastPayment: null,
+                        status: 'unpaid'
+                    });
+                    addedCount++;
+                } else {
+                    existingRecord.studentName = student.name;
+                    existingRecord.form = student.form;
+                }
+            });
+
+            saveFeeRecords();
+            updateStats();
+            renderFeesTable();
+
+            if (addedCount > 0) {
+                showToast(`Added ${addedCount} new student(s) with unpaid balance!`, 'success');
+            } else {
+                showToast('Sync complete! No new students added.', 'success');
+            }
+        }
+
+        function loadFeeRecords() {
+            const saved = localStorage.getItem('fee_records');
+            if (saved) {
+                feeRecords = JSON.parse(saved);
+            } else {
+                feeRecords = [];
+                saveFeeRecords();
+            }
+            updateStats();
+            renderFeesTable();
+        }
+
+        function loadPayments() {
+            const saved = localStorage.getItem('fee_payments');
+            if (saved) {
+                payments = JSON.parse(saved);
+            } else {
+                payments = [];
+                savePayments();
+            }
+            renderPaymentHistory();
+        }
+
+        function saveFeeRecords() {
+            localStorage.setItem('fee_records', JSON.stringify(feeRecords));
+        }
+
+        function savePayments() {
+            localStorage.setItem('fee_payments', JSON.stringify(payments));
+        }
+
+        function updateStats() {
+            let totalExpected = 0;
+            let totalCollected = 0;
+            let totalOutstanding = 0;
+
+            feeRecords.forEach(record => {
+                totalExpected += record.totalFee;
+                totalCollected += record.paid;
+                totalOutstanding += record.balance;
+            });
+
+            document.getElementById('totalExpected').textContent = totalExpected > 0 ? `MWK ${(totalExpected / 1000).toFixed(0)}k` : 'MWK0';
+            document.getElementById('totalCollected').textContent = totalCollected > 0 ? `MWK ${(totalCollected / 1000).toFixed(0)}k` : 'MWK0';
+            document.getElementById('totalOutstanding').textContent = totalOutstanding > 0 ? `MWK ${(totalOutstanding / 1000).toFixed(0)}k` : 'MWK0';
+        }
+
+        function syncWithStudents() {
+            loadStudentsFromStorage();
+            syncFeeRecordsWithStudents();
+        }
+
+        function filterFees() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            renderFeesTable(searchTerm);
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.filter === filter) btn.classList.add('active');
+            });
+            filterFees();
+        }
+
+        function renderFeesTable(searchTerm = '') {
+            let filteredRecords = [...feeRecords];
+
+            if (currentFilter !== 'all') {
+                filteredRecords = filteredRecords.filter(r => r.status === currentFilter);
+            }
+
+            if (searchTerm) {
+                filteredRecords = filteredRecords.filter(r =>
+                    r.studentName.toLowerCase().includes(searchTerm) ||
+                    r.form.toLowerCase().includes(searchTerm) ||
+                    (students.find(s => s.id === r.studentId)?.phone || '').includes(searchTerm)
+                );
+            }
+
+            const tbody = document.getElementById('feesTableBody');
+
+            if (filteredRecords.length === 0) {
+                tbody.innerHTML = `
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 3rem;">
+                                <div class="empty-state">
+                                    <i class="fas fa-coins"></i>
+                                    <p>No fee records found</p>
+                                    <p style="font-size: 0.85rem; color: #aaa;">Click "Sync Now" to import students from Students page</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                return;
+            }
+
+            tbody.innerHTML = filteredRecords.map(record => {
+                let statusClass = '';
+                let statusText = '';
+                if (record.balance === 0) {
+                    statusClass = 'status-paid';
+                    statusText = 'Fully Paid';
+                } else if (record.paid > 0) {
+                    statusClass = 'status-partial';
+                    statusText = 'Partial';
+                } else {
+                    statusClass = 'status-unpaid';
+                    statusText = 'Unpaid';
+                }
+
+                return `
+                        <tr>
+                            <td>${record.studentId}</td>
+                            <td><strong>${escapeHtml(record.studentName)}</strong></td>
+                            <td>${record.form}</td>
+                            <td class="amount">MWK ${record.totalFee.toLocaleString()}</td>
+                            <td class="amount">MWK ${record.paid.toLocaleString()}</td>
+                            <td class="amount" style="color: ${record.balance > 0 ? '#e74c3c' : '#2ecc71'}">MWK ${record.balance.toLocaleString()}</td>
+                            <td><span class="payment-status ${statusClass}">${statusText}</span></td>
+                            <td>${record.lastPayment || '—'}</td>
+                            <td>
+                                <button class="btn-sm btn-outline" onclick="recordPayment(${record.studentId})" style="margin-right: 5px;">
+                                    <i class="fas fa-money-bill"></i> Pay
+                                </button>
+                                <button class="btn-sm btn-outline" onclick="viewPaymentHistory(${record.studentId})">
+                                    <i class="fas fa-history"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+            }).join('');
+        }
+
+        // PDF Export Function
+        function exportFeesToPDF() {
+            if (feeRecords.length === 0) {
+                showToast('No fee data to export', 'error');
+                return;
+            }
+
+            const totalCollected = feeRecords.reduce((sum, r) => sum + r.paid, 0);
+            const totalOutstanding = feeRecords.reduce((sum, r) => sum + r.balance, 0);
+            const totalExpected = feeRecords.reduce((sum, r) => sum + r.totalFee, 0);
+            const paidCount = feeRecords.filter(r => r.balance === 0).length;
+            const partialCount = feeRecords.filter(r => r.paid > 0 && r.balance > 0).length;
+            const unpaidCount = feeRecords.filter(r => r.paid === 0).length;
+
+            const pdfContent = `
+                    <div class="pdf-report">
+                        <h1>Starc Innovations School</h1>
+                        <p style="color: #666;">Fee Collection Report</p>
+                        <hr>
+                        <p><strong>Date Generated:</strong> ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+                        <p><strong>Generated By:</strong> School Administrator</p>
+                        
+                        <div class="summary-box">
+                            <h2>📊 Summary Statistics</h2>
+                            <table style="width: 100%;">
+                                <tr><td><strong>Total Students:</strong></td><td>${students.length}</td></tr>
+                                <tr><td><strong>Total Expected Fees:</strong></td><td>MWK ${totalExpected.toLocaleString()}</td></tr>
+                                <tr><td><strong>Total Collected:</strong></td><td>MWK ${totalCollected.toLocaleString()}</td></tr>
+                                <tr><td><strong>Total Outstanding:</strong></td><td>MWK ${totalOutstanding.toLocaleString()}</td></tr>
+                                <tr><td><strong>Collection Rate:</strong></td><td>${totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0}%</td></tr>
+                            </table>
+                        </div>
+                        
+                        <div class="summary-box">
+                            <h2>📈 Payment Status Breakdown</h2>
+                            <table style="width: 100%;">
+                                <tr><td><strong>Fully Paid:</strong></td><td>${paidCount} students</td></tr>
+                                <tr><td><strong>Partial Payment:</strong></td><td>${partialCount} students</td></tr>
+                                <tr><td><strong>Unpaid:</strong></td><td>${unpaidCount} students</td></tr>
+                            </table>
+                        </div>
+                        
+                        <h2>📋 Detailed Fee Records</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Student Name</th>
+                                    <th>Form</th>
+                                    <th>Total Fee (MWK)</th>
+                                    <th>Paid (MWK)</th>
+                                    <th>Balance (MWK)</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${feeRecords.map(r => `
+                                    <tr>
+                                        <td>${r.studentName}</td>
+                                        <td>${r.form}</td>
+                                        <td>${r.totalFee.toLocaleString()}</td>
+                                        <td>${r.paid.toLocaleString()}</td>
+                                        <td>${r.balance.toLocaleString()}</td>
+                                        <td>${r.balance === 0 ? 'Fully Paid' : r.paid > 0 ? 'Partial' : 'Unpaid'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        
+                        <div class="footer">
+                            <p>This is a computer-generated document. No signature required.</p>
+                            <p>Starc Innovations School - Quality Education for Tomorrow's Leaders</p>
+                        </div>
+                    </div>
+                `;
+
+            const element = document.createElement('div');
+            element.innerHTML = pdfContent;
+            document.body.appendChild(element);
+
+            const opt = {
+                margin: [0.5, 0.5, 0.5, 0.5],
+                filename: `fee_report_${new Date().toISOString().split('T')[0]}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, letterRendering: true },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                document.body.removeChild(element);
+                showToast('PDF exported successfully!', 'success');
+            }).catch(() => {
+                document.body.removeChild(element);
+                showToast('Error generating PDF', 'error');
+            });
+        }
+
+        function openAddPaymentModal() {
+            if (students.length === 0) {
+                showToast('No students found. Click "Sync Now" to import students.', 'error');
+                return;
+            }
+
+            if (feeRecords.length === 0) {
+                showToast('No fee records found. Click "Sync Now" to create fee records.', 'error');
+                return;
+            }
+
+            const modalHtml = `
+                    <div class="modal-overlay" id="paymentModal">
+                        <div class="modal-container">
+                            <div class="modal-header">
+                                <h3><i class="fas fa-money-bill-wave"></i> Record Payment</h3>
+                                <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <form onsubmit="processPaymentFromModal(event)">
+                                    <div class="form-group">
+                                        <label>Select Student *</label>
+                                        <select id="modalStudentId" required>
+                                            <option value="">-- Select Student --</option>
+                                            ${feeRecords.map(r => `
+                                                <option value="${r.studentId}" data-balance="${r.balance}" data-name="${r.studentName} (${r.form})">
+                                                    ${r.studentName} (${r.form}) - Balance: MWK ${r.balance.toLocaleString()}
+                                                </option>
+                                            `).join('')}
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Current Balance (MWK)</label>
+                                        <input type="text" id="modalCurrentBalance" readonly disabled style="background: #f5f5f5;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Payment Amount (MWK) *</label>
+                                        <input type="text" id="modalPaymentAmount" class="amount-input" placeholder="Enter amount (e.g., 50000)" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Payment Method *</label>
+                                            <select id="modalPaymentMethod" required>
+                                                <option value="">Select</option>
+                                                <option value="Cash">Cash</option>
+                                                <option value="Bank Transfer">Bank Transfer</option>
+                                                <option value="Mobile Money">Mobile Money</option>
+                                                <option value="Cheque">Cheque</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Receipt Number</label>
+                                            <input type="text" id="modalReceiptNo" placeholder="Auto-generated">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Notes (Optional)</label>
+                                        <textarea id="modalPaymentNotes" rows="2" placeholder="Additional notes..."></textarea>
+                                    </div>
+                                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                        <button type="button" onclick="closeModal()" class="btn-outline" style="flex:1;">Cancel</button>
+                                        <button type="submit" class="btn-primary" style="flex:1;">Record Payment</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            const studentSelect = document.getElementById('modalStudentId');
+            const balanceInput = document.getElementById('modalCurrentBalance');
+
+            studentSelect.addEventListener('change', function () {
+                const selectedOption = this.options[this.selectedIndex];
+                const balance = selectedOption.getAttribute('data-balance');
+                if (balance) {
+                    balanceInput.value = `MWK ${parseInt(balance).toLocaleString()}`;
+                } else {
+                    balanceInput.value = '';
+                }
+            });
+        }
+
+        function processPaymentFromModal(event) {
+            event.preventDefault();
+
+            const studentId = parseInt(document.getElementById('modalStudentId').value);
+            const amountStr = document.getElementById('modalPaymentAmount').value.trim();
+            const method = document.getElementById('modalPaymentMethod').value;
+            const notes = document.getElementById('modalPaymentNotes').value;
+            let receiptNo = document.getElementById('modalReceiptNo').value;
+
+            if (!studentId) {
+                showToast('Please select a student', 'error');
+                return;
+            }
+
+            const amount = parseInt(amountStr.replace(/,/g, '')) || 0;
+
+            if (!amount || amount <= 0) {
+                showToast('Please enter a valid amount (e.g., 50000)', 'error');
+                return;
+            }
+
+            if (!method) {
+                showToast('Please select a payment method', 'error');
+                return;
+            }
+
+            const feeIndex = feeRecords.findIndex(r => r.studentId === studentId);
+            if (feeIndex === -1) return;
+
+            if (amount > feeRecords[feeIndex].balance) {
+                showToast(`Amount exceeds balance of MWK ${feeRecords[feeIndex].balance.toLocaleString()}`, 'error');
+                return;
+            }
+
+            if (!receiptNo) {
+                const receiptCount = payments.length + 1;
+                receiptNo = `REC-${new Date().getFullYear()}-${String(receiptCount).padStart(4, '0')}`;
+            }
+
+            feeRecords[feeIndex].paid += amount;
+            feeRecords[feeIndex].balance -= amount;
+            feeRecords[feeIndex].lastPayment = new Date().toLocaleDateString();
+
+            if (feeRecords[feeIndex].balance === 0) {
+                feeRecords[feeIndex].status = 'paid';
+            } else if (feeRecords[feeIndex].paid > 0) {
+                feeRecords[feeIndex].status = 'partial';
+            }
+
+            const payment = {
+                id: Date.now(),
+                studentId: studentId,
+                studentName: feeRecords[feeIndex].studentName,
+                amount: amount,
+                date: new Date().toISOString().split('T')[0],
+                method: method,
+                receiptNo: receiptNo,
+                notes: notes,
+                balanceAfter: feeRecords[feeIndex].balance
+            };
+
+            payments.unshift(payment);
+
+            saveFeeRecords();
+            savePayments();
+            closeModal();
+            updateStats();
+            renderFeesTable();
+            renderPaymentHistory();
+            showToast(`Payment of MWK ${amount.toLocaleString()} recorded for ${feeRecords[feeIndex].studentName}`, 'success');
+        }
+
+        function recordPayment(studentId) {
+            const student = students.find(s => s.id === studentId);
+            const feeRecord = feeRecords.find(r => r.studentId === studentId);
+            if (!student || !feeRecord) return;
+
+            const modalHtml = `
+                    <div class="modal-overlay" id="paymentModal">
+                        <div class="modal-container">
+                            <div class="modal-header">
+                                <h3><i class="fas fa-money-bill-wave"></i> Record Payment - ${escapeHtml(student.name)}</h3>
+                                <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <form onsubmit="processPayment(event, ${studentId})">
+                                    <div class="form-group">
+                                        <label>Student</label>
+                                        <input type="text" value="${escapeHtml(student.name)} (${student.form})" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Current Balance (MWK)</label>
+                                        <input type="text" value="MWK ${feeRecord.balance.toLocaleString()}" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Payment Amount (MWK) *</label>
+                                        <input type="text" id="paymentAmount" class="amount-input" placeholder="Enter amount (e.g., 50000)" required>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Payment Method *</label>
+                                            <select id="paymentMethod" required>
+                                                <option value="">Select</option>
+                                                <option value="Cash">Cash</option>
+                                                <option value="Bank Transfer">Bank Transfer</option>
+                                                <option value="Mobile Money">Mobile Money</option>
+                                                <option value="Cheque">Cheque</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Receipt Number</label>
+                                            <input type="text" id="receiptNo" placeholder="Auto-generated">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Notes (Optional)</label>
+                                        <textarea id="paymentNotes" rows="2" placeholder="Additional notes..."></textarea>
+                                    </div>
+                                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                        <button type="button" onclick="closeModal()" class="btn-outline" style="flex:1;">Cancel</button>
+                                        <button type="submit" class="btn-primary" style="flex:1;">Record Payment</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function processPayment(event, studentId) {
+            event.preventDefault();
+
+            const amountStr = document.getElementById('paymentAmount').value.trim();
+            const method = document.getElementById('paymentMethod').value;
+            const notes = document.getElementById('paymentNotes').value;
+            let receiptNo = document.getElementById('receiptNo').value;
+
+            const amount = parseInt(amountStr.replace(/,/g, '')) || 0;
+
+            if (!amount || amount <= 0) {
+                showToast('Please enter a valid amount (e.g., 50000)', 'error');
+                return;
+            }
+
+            if (!method) {
+                showToast('Please select a payment method', 'error');
+                return;
+            }
+
+            const feeIndex = feeRecords.findIndex(r => r.studentId === studentId);
+            if (feeIndex === -1) return;
+
+            if (amount > feeRecords[feeIndex].balance) {
+                showToast(`Amount exceeds balance of MWK ${feeRecords[feeIndex].balance.toLocaleString()}`, 'error');
+                return;
+            }
+
+            if (!receiptNo) {
+                const receiptCount = payments.length + 1;
+                receiptNo = `REC-${new Date().getFullYear()}-${String(receiptCount).padStart(4, '0')}`;
+            }
+
+            feeRecords[feeIndex].paid += amount;
+            feeRecords[feeIndex].balance -= amount;
+            feeRecords[feeIndex].lastPayment = new Date().toLocaleDateString();
+
+            if (feeRecords[feeIndex].balance === 0) {
+                feeRecords[feeIndex].status = 'paid';
+            } else if (feeRecords[feeIndex].paid > 0) {
+                feeRecords[feeIndex].status = 'partial';
+            }
+
+            const payment = {
+                id: Date.now(),
+                studentId: studentId,
+                studentName: feeRecords[feeIndex].studentName,
+                amount: amount,
+                date: new Date().toISOString().split('T')[0],
+                method: method,
+                receiptNo: receiptNo,
+                notes: notes,
+                balanceAfter: feeRecords[feeIndex].balance
+            };
+
+            payments.unshift(payment);
+
+            saveFeeRecords();
+            savePayments();
+            closeModal();
+            updateStats();
+            renderFeesTable();
+            renderPaymentHistory();
+            showToast(`Payment of MWK ${amount.toLocaleString()} recorded for ${feeRecords[feeIndex].studentName}`, 'success');
+        }
+
+        function renderPaymentHistory() {
+            const tbody = document.getElementById('paymentHistoryBody');
+
+            if (payments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;"><i class="fas fa-receipt"></i> No payment records yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = payments.slice(0, 10).map(payment => {
+                return '<tr>' +
+                    '<td>' + payment.date + '</td>' +
+                    '<td><strong>' + escapeHtml(payment.studentName) + '</strong></td>' +
+                    '<td class="amount">MWK ' + payment.amount.toLocaleString() + '</td>' +
+                    '<td>' + payment.method + '</td>' +
+                    '<td>' + payment.receiptNo + '</td>' +
+                    '<td>' + (payment.notes || '—') + '</td>' +
+                    '</tr>';
+            }).join('');
+        }
+
+        function viewPaymentHistory(studentId) {
+            const student = students.find(s => s.id === studentId);
+            const studentPayments = payments.filter(p => p.studentId === studentId);
+
+            if (studentPayments.length === 0) {
+                showToast(`No payment history for ${student.name}`, 'info');
+                return;
+            }
+
+            let tableRows = '';
+            for (let i = 0; i < studentPayments.length; i++) {
+                const p = studentPayments[i];
+                tableRows += '<tr><td>' + p.date + '</td><td>MWK ' + p.amount.toLocaleString() + '</td><td>' + p.method + '</td><td>' + p.receiptNo + '</td></tr>';
+            }
+
+            const modalHtml = `
+                    <div class="modal-overlay" id="historyModal">
+                        <div class="modal-container">
+                            <div class="modal-header">
+                                <h3><i class="fas fa-history"></i> Payment History - ${escapeHtml(student.name)}</h3>
+                                <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr><th>Date</th><th>Amount</th><th>Method</th><th>Receipt</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        ${tableRows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function generateFeeReport() {
+            exportFeesToPDF();
+        }
+
+        function exportFeesToCSV() {
+            if (feeRecords.length === 0) {
+                showToast('No fee data to export', 'error');
+                return;
+            }
+
+            let csv = 'Student ID,Student Name,Form,Total Fee (MWK),Paid (MWK),Balance (MWK),Status,Last Payment\n';
+            feeRecords.forEach(r => {
+                csv += `"${r.studentId}","${r.studentName}","${r.form}","${r.totalFee}","${r.paid}","${r.balance}","${r.status}","${r.lastPayment || ''}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fee_records_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Fee records exported successfully!', 'success');
+        }
+
+        function openClearAllConfirm() {
+            if (feeRecords.length === 0 && payments.length === 0) {
+                showToast('No fee data to clear', 'error');
+                return;
+            }
+
+            const modalHtml = `
+                    <div class="modal-overlay" id="clearConfirmModal">
+                        <div class="modal-container">
+                            <div class="modal-header">
+                                <h3><i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i> Confirm Clear All</h3>
+                                <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                            </div>
+                            <div class="modal-body confirm-modal">
+                                <div class="warning-icon"><i class="fas fa-trash-alt"></i></div>
+                                <p><strong>Are you sure you want to DELETE ALL fee records?</strong></p>
+                                <p style="color: #e74c3c; font-size: 0.9rem;">This action cannot be undone. You will lose:</p>
+                                <p style="margin-top: 0.5rem;">📊 ${feeRecords.length} fee records<br>💰 ${payments.length} payment transactions</p>
+                                <div class="confirm-modal-buttons">
+                                    <button onclick="closeModal()" class="btn-outline" style="flex:1;">Cancel</button>
+                                    <button onclick="clearAllFees()" class="clear-all-btn" style="flex:1;">Yes, Delete All</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function clearAllFees() {
+            feeRecords = [];
+            payments = [];
+            saveFeeRecords();
+            savePayments();
+            closeModal();
+            updateStats();
+            renderFeesTable();
+            renderPaymentHistory();
+            showToast('All fee records have been cleared!', 'success');
+        }
+
+        function closeModal() {
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) modal.remove();
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.background = type === 'success' ? '#2ecc71' : '#e74c3c';
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function (m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // Initialize
+        function init() {
+            loadStudentsFromStorage();
+            loadFeeRecords();
+            loadPayments();
+        }
+
+        init();
+
+        // Make functions global
+        window.recordPayment = recordPayment;
+        window.viewPaymentHistory = viewPaymentHistory;
+        window.filterFees = filterFees;
+        window.setFilter = setFilter;
+        window.exportFeesToCSV = exportFeesToCSV;
+        window.exportFeesToPDF = exportFeesToPDF;
+        window.generateFeeReport = generateFeeReport;
+        window.openClearAllConfirm = openClearAllConfirm;
+        window.clearAllFees = clearAllFees;
+        window.closeModal = closeModal;
+        window.processPayment = processPayment;
+        window.openAddPaymentModal = openAddPaymentModal;
+        window.processPaymentFromModal = processPaymentFromModal;
+        window.syncWithStudents = syncWithStudents;
+    </script>
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Service Worker registered', reg))
+                .catch(err => console.log('Service Worker registration failed', err));
+        }
+
+        // Install prompt for PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // Optional: Show install button
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) {
+                installBtn.style.display = 'flex';
+                installBtn.addEventListener('click', () => {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted install');
+                        }
+                        deferredPrompt = null;
+                        installBtn.style.display = 'none';
+                    });
+                });
+            }
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+            }
+        }
+    </script>
+</body>
+
+</html>

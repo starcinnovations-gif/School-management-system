@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Starc Edu">
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232d60ff'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3ES%3C/text%3E%3C/svg%3E">
+    <meta name="theme-color" content="#2d60ff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Exams Management | Starc Innovations</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
+        rel="stylesheet">
+    <style>
+        /* Exams specific styles */
+        .exam-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-bar select,
+        .filter-bar input {
+            padding: 10px 16px;
+            border-radius: 40px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            font-size: 0.9rem;
+        }
+
+        .score-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .score-high {
+            background: #e0f0ea;
+            color: #0d5936;
+        }
+
+        .score-medium {
+            background: #fef5e8;
+            color: #a75800;
+        }
+
+        .score-low {
+            background: #fee8e6;
+            color: #c0392b;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border-radius: 20px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eef2ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1.5rem 0 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .exam-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 40px;
+            color: white;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .clear-all-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .clear-all-btn:hover {
+            background: #c0392b;
+            transform: scale(1.02);
+        }
+
+        .confirm-modal {
+            text-align: center;
+        }
+
+        .confirm-modal .warning-icon {
+            font-size: 3rem;
+            color: #e74c3c;
+            margin-bottom: 1rem;
+        }
+
+        .confirm-modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Service Worker registered', reg))
+                .catch(err => console.log('Service Worker registration failed', err));
+        }
+
+        // Install prompt for PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // Optional: Show install button
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) {
+                installBtn.style.display = 'flex';
+                installBtn.addEventListener('click', () => {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted install');
+                        }
+                        deferredPrompt = null;
+                        installBtn.style.display = 'none';
+                    });
+                });
+            }
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+            }
+        }
+    </script>
+    <div class="sidebar">
+        <h2><i class="fas fa-graduation-cap"></i> Starc Innovations · edu</h2>
+        <ul>
+            <li><a href="index.html"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="students.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+            <li><a href="teachers.html"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
+            <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+            <li class="active"><a href="exams.html"><i class="fas fa-pen-to-square"></i> Exams</a></li>
+            <li><a href="fees.html"><i class="fas fa-coins"></i> Fees</a></li>
+            <li><a href="timetable.html"><i class="fas fa-table"></i> Timetable</a></li>
+            <li><a href="library.html"><i class="fas fa-book-open"></i> Library</a></li>
+            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <li><a href="settings.html"><i class="fas fa-sliders"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <i class="fas fa-circle" style="color:#3fe67b; font-size:0.5rem;"></i> admin · online
+        </div>
+        <button id="installBtn" onclick="installApp()"
+            style="display: none; background: #2d60ff; color: white; border: none; padding: 10px; border-radius: 40px; margin: 10px 0; cursor: pointer; width: 100%;">
+            <i class="fas fa-download"></i> Install App
+        </button>
+    </div>
+
+    <div class="main-panel">
+        <div class="topbar">
+            <div class="page-title">
+                <h1><i class="fas fa-pen-to-square"></i> Exams Management</h1>
+            </div>
+            <div class="profile-pill">
+                <i class="fas fa-user-shield"></i> Admin
+            </div>
+        </div>
+
+        <!-- Exam Statistics -->
+        <div class="exam-stats">
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-chart-line"></i> Total Exams</div>
+                <div class="stat-number" id="totalExams">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-star"></i> Average Score</div>
+                <div class="stat-number" id="avgScore">0%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-trophy"></i> Highest Score</div>
+                <div class="stat-number" id="highestScore">0%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-chart-line"></i> Pass Rate</div>
+                <div class="stat-number" id="passRate">0%</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-bar">
+            <select id="formFilter" onchange="filterExams()">
+                <option value="all">All Forms</option>
+                <option value="Form 1">Form 1</option>
+                <option value="Form 2">Form 2</option>
+                <option value="Form 3">Form 3</option>
+                <option value="Form 4">Form 4</option>
+            </select>
+            <select id="subjectFilter" onchange="filterExams()">
+                <option value="all">All Subjects</option>
+                <option value="English">English</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Chichewa">Chichewa</option>
+                <option value="Biology">Biology</option>
+                <option value="Agriculture">Agriculture</option>
+                <option value="Physics">Physics</option>
+                <option value="Chemistry">Chemistry</option>
+                <option value="Social Studies">Social Studies</option>
+                <option value="Geography">Geography</option>
+                <option value="Bible Knowledge">Bible Knowledge</option>
+                <option value="Life Skills">Life Skills</option>
+                <option value="Computer">Computer</option>
+                <option value="History">History</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="🔍 Search student..." onkeyup="filterExams()">
+            <button class="btn-primary" onclick="openAddExamModal()">
+                <i class="fas fa-plus"></i> Add Result
+            </button>
+            <button class="btn-outline" onclick="exportTableToCSV('examsTable', 'exams_export.csv')">
+                <i class="fas fa-download"></i> Export CSV
+            </button>
+            <button class="clear-all-btn" onclick="openClearAllConfirm()">
+                <i class="fas fa-trash-alt"></i> Clear All
+            </button>
+        </div>
+
+        <!-- Chart -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <span><i class="fas fa-chart-simple"></i> Subject Performance</span>
+                <i class="fas fa-ellipsis"></i>
+            </div>
+            <canvas id="examChartPage"></canvas>
+        </div>
+
+        <!-- Exams List Table - IMPORTANT: Has ID="examsTable" for export -->
+        <div class="section-header">
+            <h2><i class="fas fa-list"></i> Exam Results</h2>
+        </div>
+        <div class="glass-table">
+            <div style="overflow-x: auto;">
+                <table id="examsTable">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Form</th>
+                            <th>Subject</th>
+                            <th>Score (%)</th>
+                            <th>Grade</th>
+                            <th>Exam Date</th>
+                            <th>Term</th>
+                            <th>Actions</th>
+                    </thead>
+                    <tbody id="examsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="js/export.js"></script>
+    <script>
+        // ============ EXAMS DATA ============
+        let exams = [];
+        let examChart = null;
+
+        function getGrade(score) {
+            if (score >= 80) return { letter: 'A', class: 'score-high' };
+            if (score >= 70) return { letter: 'B', class: 'score-high' };
+            if (score >= 60) return { letter: 'C', class: 'score-medium' };
+            if (score >= 50) return { letter: 'D', class: 'score-medium' };
+            if (score >= 40) return { letter: 'E', class: 'score-low' };
+            return { letter: 'F', class: 'score-low' };
+        }
+
+        function loadExams() {
+            const saved = localStorage.getItem('exam_results');
+            if (saved) {
+                exams = JSON.parse(saved);
+            } else {
+                const students = ['John Banda', 'Mary Phiri', 'Peter Zulu', 'Alice Chirwa', 'Chisomo Banda', 'Grace Mwale'];
+                const forms = ['Form 1', 'Form 2', 'Form 3', 'Form 4'];
+                const subjects = ['English', 'Mathematics', 'Biology', 'Physics', 'Chemistry', 'Geography', 'History', 'Chichewa'];
+                const terms = ['Term 1', 'Term 2', 'Term 3'];
+
+                for (let i = 0; i < 45; i++) {
+                    exams.push({
+                        id: Date.now() + i,
+                        student: students[Math.floor(Math.random() * students.length)],
+                        form: forms[Math.floor(Math.random() * forms.length)],
+                        subject: subjects[Math.floor(Math.random() * subjects.length)],
+                        score: Math.floor(Math.random() * 100),
+                        examDate: `2026-0${Math.floor(Math.random() * 3) + 1}-${Math.floor(Math.random() * 28) + 1}`,
+                        term: terms[Math.floor(Math.random() * terms.length)]
+                    });
+                }
+                saveExams();
+            }
+            updateStats();
+            renderExams();
+            updateChart();
+        }
+
+        function saveExams() {
+            localStorage.setItem('exam_results', JSON.stringify(exams));
+        }
+
+        function updateStats() {
+            const total = exams.length;
+            const avgScore = total > 0 ? Math.round(exams.reduce((sum, e) => sum + e.score, 0) / total) : 0;
+            const highest = total > 0 ? Math.max(...exams.map(e => e.score)) : 0;
+            const passed = exams.filter(e => e.score >= 50).length;
+            const passRate = total > 0 ? Math.round((passed / total) * 100) : 0;
+
+            document.getElementById('totalExams').textContent = total;
+            document.getElementById('avgScore').textContent = avgScore + '%';
+            document.getElementById('highestScore').textContent = highest + '%';
+            document.getElementById('passRate').textContent = passRate + '%';
+        }
+
+        function filterExams() {
+            const formFilter = document.getElementById('formFilter').value;
+            const subjectFilter = document.getElementById('subjectFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = [...exams];
+            if (formFilter !== 'all') filtered = filtered.filter(e => e.form === formFilter);
+            if (subjectFilter !== 'all') filtered = filtered.filter(e => e.subject === subjectFilter);
+            if (searchTerm) filtered = filtered.filter(e => e.student.toLowerCase().includes(searchTerm));
+
+            renderExams(filtered);
+            updateChart(filtered);
+        }
+
+        function renderExams(examsToRender = exams) {
+            const tbody = document.getElementById('examsTableBody');
+            if (examsToRender.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem;">No exam results found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = examsToRender.map(exam => {
+                const grade = getGrade(exam.score);
+                return `
+                    <tr>
+                        <td>${escapeHtml(exam.student)}</td>
+                        <td>${exam.form}</td>
+                        <td>${exam.subject}</td>
+                        <td><span class="score-badge ${grade.class}">${exam.score}%</span></td>
+                        <td><strong>${grade.letter}</strong></td>
+                        <td>${exam.examDate}</td>
+                        <td>${exam.term}</td>
+                        <td>
+                            <button class="btn-sm btn-outline" onclick="editExam(${exam.id})" style="margin-right: 5px;">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-sm btn-outline" onclick="deleteExam(${exam.id})" style="color: #e74c3c;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateChart(filteredExams = exams) {
+            const ctx = document.getElementById('examChartPage').getContext('2d');
+            const subjectScores = {};
+            filteredExams.forEach(exam => {
+                if (!subjectScores[exam.subject]) subjectScores[exam.subject] = { total: 0, count: 0 };
+                subjectScores[exam.subject].total += exam.score;
+                subjectScores[exam.subject].count++;
+            });
+
+            const subjects = Object.keys(subjectScores);
+            const averages = subjects.map(s => Math.round(subjectScores[s].total / subjectScores[s].count));
+
+            if (examChart) examChart.destroy();
+            examChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: subjects, datasets: [{ label: 'Average Score (%)', data: averages, backgroundColor: '#4A90E2', borderRadius: 8 }] },
+                options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } } }
+            });
+        }
+
+        // ============ CLEAR ALL FUNCTION ============
+        function openClearAllConfirm() {
+            if (exams.length === 0) {
+                showToast('No exam data to clear', 'error');
+                return;
+            }
+
+            const modalHtml = `
+                <div class="modal-overlay" id="clearConfirmModal">
+                    <div class="modal-container">
+                        <div class="modal-header">
+                            <h3><i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i> Confirm Clear All</h3>
+                            <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                        </div>
+                        <div class="modal-body confirm-modal">
+                            <div class="warning-icon">
+                                <i class="fas fa-trash-alt"></i>
+                            </div>
+                            <p><strong>Are you sure you want to delete ALL exam results?</strong></p>
+                            <p style="color: #e74c3c; font-size: 0.85rem; margin-top: 0.5rem;">
+                                This action cannot be undone. You will lose all ${exams.length} exam records.
+                            </p>
+                            <div class="confirm-modal-buttons">
+                                <button onclick="closeModal()" class="btn-outline" style="flex:1;">Cancel</button>
+                                <button onclick="clearAllExams()" class="btn-danger" style="flex:1;">Yes, Delete All</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function clearAllExams() {
+            exams = [];
+            saveExams();
+            updateStats();
+            renderExams();
+            updateChart();
+            closeModal();
+            showToast('All exam results have been cleared!', 'success');
+        }
+
+        function openAddExamModal() {
+            const modalHtml = `
+                <div class="modal-overlay" id="examModal">
+                    <div class="modal-container">
+                        <div class="modal-header"><h3><i class="fas fa-plus-circle"></i> Add Exam Result</h3><button onclick="closeModal()">&times;</button></div>
+                        <div class="modal-body">
+                            <form onsubmit="addExam(event)">
+                                <div class="form-group"><label>Student Name *</label><input type="text" id="studentName" required></div>
+                                <div class="form-group"><label>Form *</label><select id="formSelect"><option value="">Select</option><option>Form 1</option><option>Form 2</option><option>Form 3</option><option>Form 4</option></select></div>
+                                <div class="form-group"><label>Subject *</label><select id="subjectSelect"><option value="">Select</option><option>English</option><option>Mathematics</option><option>Chichewa</option><option>Biology</option><option>Agriculture</option><option>Physics</option><option>Chemistry</option><option>Social Studies</option><option>Geography</option><option>Bible Knowledge</option><option>Life Skills</option><option>Computer</option><option>History</option></select></div>
+                                <div class="form-group"><label>Score (%) *</label><input type="number" id="score" min="0" max="100" required></div>
+                                <div class="form-group"><label>Exam Date *</label><input type="date" id="examDate" required></div>
+                                <div class="form-group"><label>Term *</label><select id="termSelect"><option>Term 1</option><option>Term 2</option><option>Term 3</option></select></div>
+                                <div style="display: flex; gap: 1rem;"><button type="button" onclick="closeModal()" class="btn-outline" style="flex:1;">Cancel</button><button type="submit" class="btn-primary" style="flex:1;">Save</button></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function addExam(e) {
+            e.preventDefault();
+            const student = document.getElementById('studentName').value;
+            const form = document.getElementById('formSelect').value;
+            const subject = document.getElementById('subjectSelect').value;
+            const score = parseInt(document.getElementById('score').value);
+
+            if (!student || !form || !subject || isNaN(score)) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+
+            exams.push({
+                id: Date.now(),
+                student: student,
+                form: form,
+                subject: subject,
+                score: score,
+                examDate: document.getElementById('examDate').value,
+                term: document.getElementById('termSelect').value
+            });
+            saveExams();
+            closeModal();
+            updateStats();
+            filterExams();
+            showToast('Exam result added!', 'success');
+        }
+
+        function editExam(examId) {
+            const exam = exams.find(e => e.id === examId);
+            if (!exam) return;
+
+            const modalHtml = `
+                <div class="modal-overlay" id="examModal">
+                    <div class="modal-container">
+                        <div class="modal-header"><h3><i class="fas fa-edit"></i> Edit Exam Result</h3><button onclick="closeModal()">&times;</button></div>
+                        <div class="modal-body">
+                            <form onsubmit="updateExam(event, ${examId})">
+                                <div class="form-group"><label>Student Name</label><input type="text" id="studentName" value="${escapeHtml(exam.student)}" required></div>
+                                <div class="form-group"><label>Form</label><select id="formSelect"><option ${exam.form === 'Form 1' ? 'selected' : ''}>Form 1</option><option ${exam.form === 'Form 2' ? 'selected' : ''}>Form 2</option><option ${exam.form === 'Form 3' ? 'selected' : ''}>Form 3</option><option ${exam.form === 'Form 4' ? 'selected' : ''}>Form 4</option></select></div>
+                                <div class="form-group"><label>Subject</label><select id="subjectSelect">${['English', 'Mathematics', 'Chichewa', 'Biology', 'Agriculture', 'Physics', 'Chemistry', 'Social Studies', 'Geography', 'Bible Knowledge', 'Life Skills', 'Computer', 'History'].map(s => `<option ${exam.subject === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                                <div class="form-group"><label>Score (%)</label><input type="number" id="score" value="${exam.score}" min="0" max="100" required></div>
+                                <div class="form-group"><label>Exam Date</label><input type="date" id="examDate" value="${exam.examDate}" required></div>
+                                <div class="form-group"><label>Term</label><select id="termSelect"><option ${exam.term === 'Term 1' ? 'selected' : ''}>Term 1</option><option ${exam.term === 'Term 2' ? 'selected' : ''}>Term 2</option><option ${exam.term === 'Term 3' ? 'selected' : ''}>Term 3</option></select></div>
+                                <div style="display: flex; gap: 1rem;"><button type="button" onclick="closeModal()" class="btn-outline" style="flex:1;">Cancel</button><button type="submit" class="btn-primary" style="flex:1;">Update</button></div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function updateExam(e, examId) {
+            e.preventDefault();
+            const index = exams.findIndex(e => e.id === examId);
+            if (index !== -1) {
+                exams[index] = { ...exams[index], student: document.getElementById('studentName').value, form: document.getElementById('formSelect').value, subject: document.getElementById('subjectSelect').value, score: parseInt(document.getElementById('score').value), examDate: document.getElementById('examDate').value, term: document.getElementById('termSelect').value };
+                saveExams();
+                closeModal();
+                updateStats();
+                filterExams();
+                showToast('Exam result updated!', 'success');
+            }
+        }
+
+        function deleteExam(examId) {
+            if (confirm('Delete this exam result?')) {
+                exams = exams.filter(e => e.id !== examId);
+                saveExams();
+                updateStats();
+                filterExams();
+                showToast('Deleted!', 'success');
+            }
+        }
+
+        function closeModal() {
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) modal.remove();
+        }
+
+        function showToast(msg, type) {
+            if (typeof window.showToast === 'function') {
+                window.showToast(msg, type);
+            } else {
+                // Fallback toast
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.style.background = type === 'success' ? '#2ecc71' : '#e74c3c';
+                toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${msg}`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+        }
+
+        loadExams();
+        window.editExam = editExam;
+        window.deleteExam = deleteExam;
+        window.filterExams = filterExams;
+        window.openAddExamModal = openAddExamModal;
+        window.closeModal = closeModal;
+        window.openClearAllConfirm = openClearAllConfirm;
+        window.clearAllExams = clearAllExams;
+    </script>
+</body>
+
+</html>

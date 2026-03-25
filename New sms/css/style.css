@@ -1,0 +1,471 @@
+/* css/style.css - Responsive & Mobile Optimized */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+body {
+    background: #f0f3fb;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ---------- SIDEBAR (mobile first) ---------- */
+.sidebar {
+    width: 100%;
+    background: rgba(17, 25, 40, 0.96);
+    backdrop-filter: blur(8px);
+    color: #eef2ff;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar h2 {
+    font-weight: 600;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #fff, #b3c7ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.sidebar h2 i {
+    background: #2d3b5a;
+    padding: 6px;
+    border-radius: 12px;
+    font-size: 1.2rem;
+    -webkit-text-fill-color: white;
+}
+
+.sidebar ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.sidebar li {
+    border-radius: 16px;
+}
+
+.sidebar a {
+    color: #b0c0e0;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    font-weight: 500;
+    border-radius: 16px;
+    font-size: 0.9rem;
+}
+
+.sidebar li.active a,
+.sidebar li:hover a {
+    background: #2d60ff;
+    color: white;
+}
+
+.sidebar li.active a i,
+.sidebar li:hover a i {
+    color: white;
+}
+
+.sidebar a i {
+    width: 20px;
+    font-size: 1rem;
+    color: #6d8cff;
+}
+
+.sidebar-footer {
+    display: none;
+    /* hidden on mobile */
+}
+
+/* ---------- MAIN PANEL ---------- */
+.main-panel {
+    flex: 1;
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+/* topbar */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    background: white;
+    padding: 0.6rem 1rem;
+    border-radius: 40px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.page-title h1 {
+    font-size: 1.3rem;
+    background: linear-gradient(145deg, #1e2b4f, #2d3f6e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.profile-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.badge-date {
+    background: #f0f4ff;
+    padding: 5px 12px;
+    border-radius: 40px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.profile-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    padding: 4px 12px;
+    border-radius: 40px;
+    border: 1px solid #e5ecf9;
+    font-size: 0.85rem;
+}
+
+.profile-pill i {
+    background: #2d60ff;
+    color: white;
+    border-radius: 30px;
+    padding: 6px;
+    font-size: 0.8rem;
+}
+
+/* cards */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 28px;
+    padding: 1.2rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(#2d60ff, #9ab0ff);
+}
+
+.stat-title {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #5b6b93;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.stat-number {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #121f3f;
+}
+
+.stat-trend {
+    margin-top: 8px;
+    font-size: 0.7rem;
+    background: #e1f7ec;
+    padding: 2px 10px;
+    border-radius: 30px;
+    width: fit-content;
+}
+
+/* charts */
+.chart-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.chart-card {
+    background: white;
+    border-radius: 28px;
+    padding: 1rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: #1a2542;
+}
+
+canvas {
+    max-height: 220px;
+    width: 100%;
+}
+
+/* tables */
+.glass-table {
+    background: white;
+    border-radius: 24px;
+    padding: 0.5rem 0;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    overflow-x: auto;
+    margin-top: 1rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    min-width: 500px;
+}
+
+th {
+    text-align: left;
+    padding: 0.8rem 1rem;
+    font-weight: 600;
+    border-bottom: 1px solid #e7edff;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+td {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid #f0f5ff;
+}
+
+.badge-status,
+.badge-warning {
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* buttons */
+.btn-primary,
+.btn-outline,
+.btn-export {
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    border-radius: 40px;
+}
+
+.action-row {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+input {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    border-radius: 40px;
+}
+
+.section-title {
+    margin: 1.5rem 0 0.5rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.section-title h2 {
+    font-size: 1.2rem;
+}
+
+/* ---------- DESKTOP LAYOUT ---------- */
+@media (min-width: 768px) {
+    body {
+        flex-direction: row;
+    }
+
+    .sidebar {
+        width: 260px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+        border-right: 1px solid rgba(255, 255, 255, 0.07);
+        padding: 1.5rem;
+    }
+
+    .sidebar ul {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .sidebar a {
+        padding: 12px 16px;
+        font-size: 0.95rem;
+    }
+
+    .sidebar-footer {
+        display: block;
+        margin-top: auto;
+        font-size: 0.75rem;
+        border-top: 1px solid #25344f;
+        padding-top: 1rem;
+    }
+
+    .main-panel {
+        padding: 1.5rem;
+    }
+
+    .cards-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+    }
+
+    .chart-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+    }
+
+    .page-title h1 {
+        font-size: 1.6rem;
+    }
+}
+
+/* additional small adjustments */
+@media (max-width: 480px) {
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-number {
+        font-size: 1.6rem;
+    }
+
+    .sidebar a {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+
+    .topbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .profile-area {
+        justify-content: flex-end;
+    }
+}
+
+/* ============ CALENDAR STYLES ============ */
+.calendar-wrapper {
+    background: white;
+    border-radius: 24px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.calendar-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.calendar-nav {
+    background: #f0f4ff;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.calendar-nav:hover {
+    background: #2d60ff;
+    color: white;
+}
+
+.calendar-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1e2b4f;
+    margin: 0;
+}
+
+.calendar-today {
+    background: #2d60ff;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.calendar-filters {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.filter-btn {
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: none;
+    background: #f5f5f5;
+    cursor: pointer;
+    font-size: 0.7rem;
+    border-left: 3px solid transparent;
+}
+
+.filter-btn.active {
+    background: #2d60ff;
+    color: white;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}

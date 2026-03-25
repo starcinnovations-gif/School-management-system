@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Starc Edu">
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232d60ff'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3ES%3C/text%3E%3C/svg%3E">
+    <meta name="theme-color" content="#2d60ff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Attendance | Starc Innovations</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
+        rel="stylesheet">
+    <style>
+        /* Attendance specific styles */
+        .attendance-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            background: white;
+            padding: 1rem;
+            border-radius: 60px;
+            align-items: center;
+        }
+
+        .mode-btn {
+            padding: 10px 24px;
+            border-radius: 40px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .mode-btn.active {
+            background: #2d60ff;
+            color: white;
+            border-color: #2d60ff;
+        }
+
+        .date-selector {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 60px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .date-selector input {
+            padding: 10px 16px;
+            border-radius: 40px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .quick-mark {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            padding: 8px 16px;
+            border-radius: 30px;
+            background: #f0f0f0;
+            border: none;
+            cursor: pointer;
+        }
+
+        .student-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eef2ff;
+            transition: background 0.2s;
+        }
+
+        .student-row:hover {
+            background: #f8faff;
+        }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .student-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .student-details {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 2px;
+        }
+
+        .attendance-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .attendance-btn {
+            padding: 8px 20px;
+            border-radius: 40px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-present {
+            background: #e0f0ea;
+            color: #0d5936;
+        }
+
+        .btn-present.active {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .btn-absent {
+            background: #fee8e6;
+            color: #c0392b;
+        }
+
+        .btn-absent.active {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-excused {
+            background: #fef5e8;
+            color: #a75800;
+        }
+
+        .btn-excused.active {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border-radius: 20px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .clear-all-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eef2ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 40px;
+            color: white;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .info-banner {
+            background: #e8f0fe;
+            border-left: 4px solid #2d60ff;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .attendance-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .student-row {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
+            }
+
+            .attendance-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Service Worker registered', reg))
+                .catch(err => console.log('Service Worker registration failed', err));
+        }
+
+        // Install prompt for PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // Optional: Show install button
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) {
+                installBtn.style.display = 'flex';
+                installBtn.addEventListener('click', () => {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted install');
+                        }
+                        deferredPrompt = null;
+                        installBtn.style.display = 'none';
+                    });
+                });
+            }
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+            }
+        }
+    </script>
+    <div class="sidebar">
+        <h2><i class="fas fa-graduation-cap"></i> Starc Innovations · edu</h2>
+        <ul>
+            <li><a href="index.html"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="students.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+            <li><a href="teachers.html"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
+            <li class="active"><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+            <li><a href="exams.html"><i class="fas fa-pen-to-square"></i> Exams</a></li>
+            <li><a href="fees.html"><i class="fas fa-coins"></i> Fees</a></li>
+            <li><a href="timetable.html"><i class="fas fa-table"></i> Timetable</a></li>
+            <li><a href="library.html"><i class="fas fa-book-open"></i> Library</a></li>
+            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <li><a href="settings.html"><i class="fas fa-sliders"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <i class="fas fa-circle" style="color:#3fe67b; font-size:0.5rem;"></i> admin · online
+        </div>
+        <button id="installBtn" onclick="installApp()"
+            style="display: none; background: #2d60ff; color: white; border: none; padding: 10px; border-radius: 40px; margin: 10px 0; cursor: pointer; width: 100%;">
+            <i class="fas fa-download"></i> Install App
+        </button>
+    </div>
+
+    <div class="main-panel">
+        <div class="topbar">
+            <div class="page-title">
+                <h1><i class="fas fa-calendar-check"></i> Student Attendance</h1>
+            </div>
+            <div class="profile-pill">
+                <i class="fas fa-user-shield"></i> Admin
+            </div>
+        </div>
+
+        <!-- Info Banner -->
+        <div class="info-banner">
+            <i class="fas fa-info-circle" style="color: #2d60ff; font-size: 1.2rem;"></i>
+            <div style="flex: 1;">
+                <strong>Attendance tracking</strong> — Mark students as Present, Excused, or Absent, then click "Save
+                Attendance" to store the record.
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="attendance-stats">
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-users"></i> Total Students</div>
+                <div class="stat-number" id="totalStudents">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-user-check"></i> Present</div>
+                <div class="stat-number" id="presentCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-file-alt"></i> Excused</div>
+                <div class="stat-number" id="excusedCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-user-times"></i> Absent</div>
+                <div class="stat-number" id="absentCount">0</div>
+            </div>
+        </div>
+
+        <!-- Date Selector and Save Button -->
+        <div class="date-selector">
+            <i class="fas fa-calendar-alt" style="color: #2d60ff;"></i>
+            <span style="font-weight: 500;">Select Date:</span>
+            <input type="date" id="attendanceDate" value="" onchange="loadAttendanceForDate()">
+            <button class="btn-primary" onclick="markTodayAttendance()">
+                <i class="fas fa-calendar-day"></i> Today
+            </button>
+            <button class="btn-primary" onclick="saveAttendance()" style="background: #2ecc71;">
+                <i class="fas fa-save"></i> Save Attendance
+            </button>
+            <button class="btn-outline" onclick="exportAttendanceToCSV()">
+                <i class="fas fa-download"></i> Export
+            </button>
+            <button class="clear-all-btn" onclick="openClearAllConfirm()">
+                <i class="fas fa-trash-alt"></i> Clear All
+            </button>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-mark">
+            <button class="quick-btn" onclick="markAll('present')">
+                <i class="fas fa-check-circle"></i> Mark All Present
+            </button>
+            <button class="quick-btn" onclick="markAll('excused')">
+                <i class="fas fa-file-alt"></i> Mark All Excused
+            </button>
+            <button class="quick-btn" onclick="markAll('absent')">
+                <i class="fas fa-times-circle"></i> Mark All Absent
+            </button>
+            <button class="quick-btn" onclick="resetAll()">
+                <i class="fas fa-undo-alt"></i> Reset All
+            </button>
+        </div>
+
+        <!-- Students List for Attendance -->
+        <div class="section-title">
+            <h2><i class="fas fa-list"></i> Student Roll Call</h2>
+        </div>
+        <div class="glass-table">
+            <div id="studentsAttendanceList"></div>
+        </div>
+
+        <!-- Attendance History -->
+        <div class="section-title">
+            <h2><i class="fas fa-history"></i> Attendance History</h2>
+        </div>
+        <div class="glass-table">
+            <div style="overflow-x: auto;">
+                <table id="attendanceHistoryTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Present</th>
+                            <th>Excused</th>
+                            <th>Absent</th>
+                            <th>Total</th>
+                            <th>Rate</th>
+                            <th>Actions</th>
+                    </thead>
+                    <tbody id="attendanceHistoryBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ ATTENDANCE DATA ============
+        let students = [];
+        let attendanceRecords = [];
+        let currentAttendance = {};
+        let currentFilter = 'all';
+
+        // Load students from localStorage
+        function loadStudents() {
+            const saved = localStorage.getItem('students_data');
+            if (saved) {
+                students = JSON.parse(saved);
+            } else {
+                students = [
+                    { id: 1001, name: "John Banda", form: "Form 4", guardian: "Mr. Banda", phone: "0991234567", status: "active" },
+                    { id: 1002, name: "Mary Phiri", form: "Form 3", guardian: "Mrs. Phiri", phone: "0887654321", status: "active" },
+                    { id: 1003, name: "Peter Zulu", form: "Form 2", guardian: "Mr. Zulu", phone: "0998765432", status: "active" },
+                    { id: 1004, name: "Alice Chirwa", form: "Form 1", guardian: "Mrs. Chirwa", phone: "0881234567", status: "active" },
+                    { id: 1005, name: "Chisomo Banda", form: "Form 4", guardian: "Mr. Banda", phone: "0995551234", status: "active" }
+                ];
+                localStorage.setItem('students_data', JSON.stringify(students));
+            }
+            document.getElementById('totalStudents').textContent = students.filter(s => s.status === 'active').length;
+        }
+
+        // Load attendance records
+        function loadAttendanceRecords() {
+            const saved = localStorage.getItem('attendance_records');
+            if (saved) {
+                attendanceRecords = JSON.parse(saved);
+            } else {
+                attendanceRecords = [];
+                localStorage.setItem('attendance_records', JSON.stringify(attendanceRecords));
+            }
+            renderAttendanceHistory();
+        }
+
+        // Load attendance for selected date
+        function loadAttendanceForDate() {
+            const date = document.getElementById('attendanceDate').value;
+            if (!date) return;
+
+            const existingRecord = attendanceRecords.find(r => r.date === date);
+
+            if (existingRecord) {
+                currentAttendance = { ...existingRecord.attendance };
+            } else {
+                // Initialize all students as unmarked
+                currentAttendance = {};
+                students.forEach(student => {
+                    if (student.status === 'active') {
+                        currentAttendance[student.id] = 'unmarked';
+                    }
+                });
+            }
+
+            renderStudentsList();
+            updateStats();
+        }
+
+        // Render students list
+        function renderStudentsList() {
+            const container = document.getElementById('studentsAttendanceList');
+            const activeStudents = students.filter(s => s.status === 'active');
+
+            if (activeStudents.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #999;">No students found. Add students in Students page first.</div>';
+                return;
+            }
+
+            container.innerHTML = activeStudents.map(student => {
+                const status = currentAttendance[student.id] || 'unmarked';
+                return `
+                    <div class="student-row">
+                        <div class="student-info">
+                            <div class="student-name">${escapeHtml(student.name)}</div>
+                            <div class="student-details">${student.form} | Guardian: ${escapeHtml(student.guardian)}</div>
+                        </div>
+                        <div class="attendance-buttons">
+                            <button class="attendance-btn btn-present ${status === 'present' ? 'active' : ''}" onclick="setStudentAttendance(${student.id}, 'present')">
+                                <i class="fas fa-check"></i> Present
+                            </button>
+                            <button class="attendance-btn btn-excused ${status === 'excused' ? 'active' : ''}" onclick="setStudentAttendance(${student.id}, 'excused')">
+                                <i class="fas fa-file-alt"></i> Excused
+                            </button>
+                            <button class="attendance-btn btn-absent ${status === 'absent' ? 'active' : ''}" onclick="setStudentAttendance(${student.id}, 'absent')">
+                                <i class="fas fa-times"></i> Absent
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Set attendance for a student
+        function setStudentAttendance(studentId, status) {
+            currentAttendance[studentId] = status;
+            renderStudentsList();
+            updateStats();
+        }
+
+        // Update statistics
+        function updateStats() {
+            let present = 0, excused = 0, absent = 0;
+
+            students.forEach(student => {
+                if (student.status !== 'active') return;
+                const status = currentAttendance[student.id];
+                if (status === 'present') present++;
+                else if (status === 'excused') excused++;
+                else if (status === 'absent') absent++;
+            });
+
+            document.getElementById('presentCount').textContent = present;
+            document.getElementById('excusedCount').textContent = excused;
+            document.getElementById('absentCount').textContent = absent;
+        }
+
+        // Mark all students with a status
+        function markAll(status) {
+            students.forEach(student => {
+                if (student.status === 'active') {
+                    currentAttendance[student.id] = status;
+                }
+            });
+            renderStudentsList();
+            updateStats();
+            showToast(`Marked all students as ${status}`, 'success');
+        }
+
+        // Reset all to unmarked
+        function resetAll() {
+            students.forEach(student => {
+                if (student.status === 'active') {
+                    currentAttendance[student.id] = 'unmarked';
+                }
+            });
+            renderStudentsList();
+            updateStats();
+            showToast('All marks reset', 'success');
+        }
+
+        // Save attendance for current date
+        function saveAttendance() {
+            const date = document.getElementById('attendanceDate').value;
+            if (!date) {
+                showToast('Please select a date first', 'error');
+                return;
+            }
+
+            // Check if any students are unmarked
+            const unmarkedCount = Object.values(currentAttendance).filter(s => s === 'unmarked').length;
+            if (unmarkedCount > 0) {
+                if (!confirm(`${unmarkedCount} student(s) are not marked. Continue anyway?`)) {
+                    return;
+                }
+            }
+
+            const present = Object.values(currentAttendance).filter(s => s === 'present').length;
+            const excused = Object.values(currentAttendance).filter(s => s === 'excused').length;
+            const absent = Object.values(currentAttendance).filter(s => s === 'absent').length;
+
+            const existingIndex = attendanceRecords.findIndex(r => r.date === date);
+            const record = {
+                date: date,
+                attendance: { ...currentAttendance },
+                present: present,
+                excused: excused,
+                absent: absent,
+                total: students.filter(s => s.status === 'active').length,
+                timestamp: new Date().toISOString()
+            };
+
+            if (existingIndex !== -1) {
+                attendanceRecords[existingIndex] = record;
+                showToast('Attendance updated successfully!', 'success');
+            } else {
+                attendanceRecords.push(record);
+                showToast('Attendance saved successfully!', 'success');
+            }
+
+            // Sort by date (newest first)
+            attendanceRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+            localStorage.setItem('attendance_records', JSON.stringify(attendanceRecords));
+
+            renderAttendanceHistory();
+        }
+
+        // Render attendance history
+        function renderAttendanceHistory() {
+            const tbody = document.getElementById('attendanceHistoryBody');
+
+            if (attendanceRecords.length === 0) {
+                tbody.innerHTML = '发展<td colspan="7" style="text-align: center; padding: 2rem;">No attendance records yet</td> </tr>';
+                return;
+            }
+
+            tbody.innerHTML = attendanceRecords.map(record => {
+                const rate = record.total > 0 ? Math.round(((record.present + record.excused) / record.total) * 100) : 0;
+                return `
+                    <tr>
+                        <td><strong>${record.date}</strong></td>
+                        <td><span class="badge-status">${record.present}</span></td>
+                        <td><span style="background:#fef5e8; padding:4px 8px; border-radius:20px;">${record.excused}</span></td>
+                        <td><span style="background:#fee8e6; padding:4px 8px; border-radius:20px;">${record.absent}</span></td>
+                        <td>${record.total}</td>
+                        <td><strong>${rate}%</strong></td>
+                        <td>
+                            <button class="btn-sm btn-outline" onclick="viewAttendanceDate('${record.date}')">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="btn-sm btn-outline" onclick="deleteAttendanceDate('${record.date}')" style="color:#e74c3c;">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // View attendance for a specific date
+        function viewAttendanceDate(date) {
+            document.getElementById('attendanceDate').value = date;
+            loadAttendanceForDate();
+            showToast(`Loaded attendance for ${date}`, 'success');
+        }
+
+        // Delete attendance for a specific date
+        function deleteAttendanceDate(date) {
+            if (confirm(`Delete attendance record for ${date}?`)) {
+                attendanceRecords = attendanceRecords.filter(r => r.date !== date);
+                localStorage.setItem('attendance_records', JSON.stringify(attendanceRecords));
+                renderAttendanceHistory();
+
+                // If current date is the deleted one, reload
+                const currentDate = document.getElementById('attendanceDate').value;
+                if (currentDate === date) {
+                    loadAttendanceForDate();
+                }
+                showToast('Attendance record deleted!', 'success');
+            }
+        }
+
+        // Mark today's attendance
+        function markTodayAttendance() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('attendanceDate').value = today;
+            loadAttendanceForDate();
+        }
+
+        // Export attendance to CSV
+        function exportAttendanceToCSV() {
+            if (attendanceRecords.length === 0) {
+                showToast('No attendance data to export', 'error');
+                return;
+            }
+
+            let csv = 'Date,Total Students,Present,Excused,Absent,Attendance Rate\n';
+            attendanceRecords.forEach(record => {
+                const rate = record.total > 0 ? Math.round(((record.present + record.excused) / record.total) * 100) : 0;
+                csv += `"${record.date}","${record.total}","${record.present}","${record.excused}","${record.absent}","${rate}%"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `attendance_report_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Attendance exported successfully!', 'success');
+        }
+
+        // Clear all attendance data
+        function openClearAllConfirm() {
+            if (attendanceRecords.length === 0) {
+                showToast('No attendance data to clear', 'error');
+                return;
+            }
+
+            const modalHtml = `
+                <div class="modal-overlay" id="clearConfirmModal">
+                    <div class="modal-container">
+                        <div class="modal-header">
+                            <h3><i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i> Confirm Clear All</h3>
+                            <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                        </div>
+                        <div class="modal-body confirm-modal">
+                            <div class="warning-icon"><i class="fas fa-trash-alt"></i></div>
+                            <p><strong>Delete ALL attendance records?</strong></p>
+                            <p style="color: #e74c3c;">This action cannot be undone. You will lose ${attendanceRecords.length} records.</p>
+                            <div class="confirm-modal-buttons">
+                                <button onclick="closeModal()" class="btn-outline">Cancel</button>
+                                <button onclick="clearAllAttendance()" class="clear-all-btn">Delete All</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function clearAllAttendance() {
+            attendanceRecords = [];
+            localStorage.setItem('attendance_records', JSON.stringify(attendanceRecords));
+            resetAll();
+            renderAttendanceHistory();
+            closeModal();
+            showToast('All attendance records cleared!', 'success');
+        }
+
+        function closeModal() {
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) modal.remove();
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.background = type === 'success' ? '#2ecc71' : '#e74c3c';
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+        }
+
+        // Initialize
+        function init() {
+            loadStudents();
+            loadAttendanceRecords();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('attendanceDate').value = today;
+            loadAttendanceForDate();
+        }
+
+        init();
+
+        // Make functions global
+        window.setStudentAttendance = setStudentAttendance;
+        window.saveAttendance = saveAttendance;
+        window.markTodayAttendance = markTodayAttendance;
+        window.viewAttendanceDate = viewAttendanceDate;
+        window.deleteAttendanceDate = deleteAttendanceDate;
+        window.exportAttendanceToCSV = exportAttendanceToCSV;
+        window.openClearAllConfirm = openClearAllConfirm;
+        window.clearAllAttendance = clearAllAttendance;
+        window.closeModal = closeModal;
+        window.markAll = markAll;
+        window.resetAll = resetAll;
+    </script>
+</body>
+
+</html>

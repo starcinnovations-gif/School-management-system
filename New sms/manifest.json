@@ -1,0 +1,112 @@
+{
+    "name": "Starc Innovations School System",
+    "short_name": "Starc Edu",
+    "description": "Complete School Management System for Starc Innovations",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#f0f3fb",
+    "theme_color": "#2d60ff",
+    "orientation": "portrait",
+    "scope": "/",
+    "lang": "en",
+    "icons": [
+        {
+            "src": "icons/manifest-icon-192.maskable.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/manifest-icon-192.maskable.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/manifest-icon-512.maskable.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/manifest-icon-512.maskable.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1280' height='720' viewBox='0 0 1280 720'%3E%3Crect width='1280' height='720' fill='%23f0f3fb'/%3E%3Crect x='40' y='40' width='400' height='400' fill='white' rx='20'/%3E%3Ctext x='240' y='240' font-size='32' fill='%232d60ff' text-anchor='middle' font-family='monospace'%3EDashboard%3C/text%3E%3C/svg%3E",
+            "sizes": "1280x720",
+            "type": "image/svg+xml",
+            "form_factor": "wide",
+            "label": "Desktop Dashboard View"
+        },
+        {
+            "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='720' height='1280' viewBox='0 0 720 1280'%3E%3Crect width='720' height='1280' fill='%23f0f3fb'/%3E%3Crect x='20' y='60' width='680' height='200' fill='white' rx='20'/%3E%3Ctext x='360' y='160' font-size='28' fill='%232d60ff' text-anchor='middle' font-family='monospace'%3EStudents%3C/text%3E%3C/svg%3E",
+            "sizes": "720x1280",
+            "type": "image/svg+xml",
+            "label": "Mobile Students View"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Dashboard",
+            "short_name": "Home",
+            "description": "Go to dashboard",
+            "url": "/index.html",
+            "icons": [
+                {
+                    "src": "/icons/icon-96x96.png",
+                    "sizes": "96x96",
+                    "type": "image/png"
+                }
+            ]
+        },
+        {
+            "name": "Students",
+            "short_name": "Students",
+            "description": "Manage students",
+            "url": "/students.html",
+            "icons": [
+                {
+                    "src": "/icons/icon-96x96.png",
+                    "sizes": "96x96",
+                    "type": "image/png"
+                }
+            ]
+        },
+        {
+            "name": "Attendance",
+            "short_name": "Attendance",
+            "description": "Mark attendance",
+            "url": "/attendance.html",
+            "icons": [
+                {
+                    "src": "/icons/icon-96x96.png",
+                    "sizes": "96x96",
+                    "type": "image/png"
+                }
+            ]
+        },
+        {
+            "name": "Fees",
+            "short_name": "Fees",
+            "description": "Manage fees",
+            "url": "/fees.html",
+            "icons": [
+                {
+                    "src": "/icons/icon-96x96.png",
+                    "sizes": "96x96",
+                    "type": "image/png"
+                }
+            ]
+        }
+    ],
+    "categories": [
+        "education",
+        "productivity"
+    ],
+    "prefer_related_applications": false
+}

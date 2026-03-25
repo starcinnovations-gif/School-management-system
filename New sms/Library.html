@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Starc Edu">
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232d60ff'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3ES%3C/text%3E%3C/svg%3E">
+    <meta name="theme-color" content="#2d60ff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Library Management | Starc Innovations</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
+        rel="stylesheet">
+    <style>
+        /* Library specific styles */
+        .library-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 40px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+            background: white;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border-radius: 30px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+
+        .filter-btn.active {
+            background: #2d60ff;
+            color: white;
+            border-color: #2d60ff;
+        }
+
+        .book-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1.2rem;
+            align-items: flex-start;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+            border: 1px solid #eef2ff;
+        }
+
+        .book-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .book-cover {
+            width: 70px;
+            height: 90px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        .book-info {
+            flex: 1;
+        }
+
+        .book-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+            color: #1e2b4f;
+        }
+
+        .book-author {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .book-details {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: #888;
+            flex-wrap: wrap;
+            margin-bottom: 6px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .status-available {
+            background: #e0f0ea;
+            color: #0d5936;
+        }
+
+        .status-borrowed {
+            background: #fef5e8;
+            color: #a75800;
+        }
+
+        .status-reserved {
+            background: #fee8e6;
+            color: #c0392b;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-sm.btn-primary {
+            background: #2d60ff;
+            color: white;
+        }
+
+        .btn-sm.btn-outline {
+            background: white;
+            border: 1px solid #cbd6fc;
+            color: #1e2b4f;
+        }
+
+        .clear-all-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .clear-all-btn:hover {
+            background: #c0392b;
+            transform: scale(1.02);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 550px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eef2ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: white;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #4a5568;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 40px;
+            color: white;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .confirm-modal {
+            text-align: center;
+        }
+
+        .confirm-modal .warning-icon {
+            font-size: 3rem;
+            color: #e74c3c;
+            margin-bottom: 1rem;
+        }
+
+        .confirm-modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .library-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .book-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .book-cover {
+                width: 80px;
+                height: 100px;
+                margin: 0 auto;
+            }
+
+            .action-buttons {
+                justify-content: center;
+                margin-top: 0.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Service Worker registered', reg))
+                .catch(err => console.log('Service Worker registration failed', err));
+        }
+
+        // Install prompt for PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // Optional: Show install button
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) {
+                installBtn.style.display = 'flex';
+                installBtn.addEventListener('click', () => {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted install');
+                        }
+                        deferredPrompt = null;
+                        installBtn.style.display = 'none';
+                    });
+                });
+            }
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+            }
+        }
+    </script>
+    <div class="sidebar">
+        <h2><i class="fas fa-graduation-cap"></i> Starc Innovations · edu</h2>
+        <ul>
+            <li><a href="index.html"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="students.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+            <li><a href="teachers.html"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
+            <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+            <li><a href="exams.html"><i class="fas fa-pen-to-square"></i> Exams</a></li>
+            <li><a href="fees.html"><i class="fas fa-coins"></i> Fees</a></li>
+            <li><a href="timetable.html"><i class="fas fa-table"></i> Timetable</a></li>
+            <li class="active"><a href="library.html"><i class="fas fa-book-open"></i> Library</a></li>
+            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <li><a href="settings.html"><i class="fas fa-sliders"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <i class="fas fa-circle" style="color:#3fe67b; font-size:0.5rem;"></i> admin · online
+        </div>
+        <button id="installBtn" onclick="installApp()"
+            style="display: none; background: #2d60ff; color: white; border: none; padding: 10px; border-radius: 40px; margin: 10px 0; cursor: pointer; width: 100%;">
+            <i class="fas fa-download"></i> Install App
+        </button>
+    </div>
+
+    <div class="main-panel">
+        <div class="topbar">
+            <div class="page-title">
+                <h1><i class="fas fa-book-open"></i> Library Management</h1>
+            </div>
+            <div class="profile-pill">
+                <i class="fas fa-user-shield"></i> Librarian
+            </div>
+        </div>
+
+        <!-- Library Statistics -->
+        <div class="library-stats">
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-book"></i> Total Books</div>
+                <div class="stat-number" id="totalBooks">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-check-circle"></i> Available</div>
+                <div class="stat-number" id="availableBooks">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-hand-holding"></i> Borrowed</div>
+                <div class="stat-number" id="borrowedBooks">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-exchange-alt"></i> Active Loans</div>
+                <div class="stat-number" id="activeLoans">0</div>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="🔍 Search by title, author, or ISBN..."
+                onkeyup="filterBooks()">
+            <button class="btn-primary" onclick="openAddBookModal()">
+                <i class="fas fa-plus"></i> Add Book
+            </button>
+            <button class="clear-all-btn" onclick="openClearAllConfirm()">
+                <i class="fas fa-trash-alt"></i> Clear All
+            </button>
+        </div>
+
+        <div class="filter-group">
+            <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">📚 All Books</button>
+            <button class="filter-btn" data-filter="available" onclick="setFilter('available')">✅ Available</button>
+            <button class="filter-btn" data-filter="borrowed" onclick="setFilter('borrowed')">📖 Borrowed</button>
+            <button class="filter-btn" data-filter="reserved" onclick="setFilter('reserved')">⏳ Reserved</button>
+        </div>
+
+        <!-- Books List -->
+        <div class="section-title">
+            <h2><i class="fas fa-list"></i> Book Collection</h2>
+        </div>
+        <div id="booksList"></div>
+
+        <!-- Circulation Section -->
+        <div class="section-title">
+            <h2><i class="fas fa-history"></i> Recent Transactions</h2>
+            <button class="btn-outline" onclick="exportCirculationData()">
+                <i class="fas fa-download"></i> Export Report
+            </button>
+        </div>
+        <div class="glass-table">
+            <div style="overflow-x: auto;">
+                <table id="circulationTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Book Title</th>
+                            <th>Borrower</th>
+                            <th>Type</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                    </thead>
+                    <tbody id="circulationTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 2rem;">
+                                <i class="fas fa-info-circle"></i> No transactions yet. Borrow books to see them here.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ LIBRARY DATA ============
+        let books = [];
+        let transactions = [];
+        let currentFilter = 'all';
+
+        // Load data from localStorage
+        function loadData() {
+            const savedBooks = localStorage.getItem('library_books');
+            const savedTransactions = localStorage.getItem('library_transactions');
+
+            if (savedBooks) {
+                books = JSON.parse(savedBooks);
+            } else {
+                // Sample books only - no transactions
+                books = [
+                    { id: 1, title: "The Great Gatsby", author: "F. Scott Fitzgerald", isbn: "978-0-7432-7356-5", year: 1925, category: "Fiction", status: "available", copies: 3, availableCopies: 3, description: "A classic novel set in the Jazz Age about wealth and love." },
+                    { id: 2, title: "To Kill a Mockingbird", author: "Harper Lee", isbn: "978-0-06-112008-4", year: 1960, category: "Fiction", status: "available", copies: 2, availableCopies: 2, description: "A story of racial injustice and childhood in the American South." },
+                    { id: 3, title: "1984", author: "George Orwell", isbn: "978-0-452-28423-4", year: 1949, category: "Fiction", status: "available", copies: 5, availableCopies: 5, description: "Dystopian social science fiction about totalitarianism." },
+                    { id: 4, title: "Pride and Prejudice", author: "Jane Austen", isbn: "978-0-14-143951-8", year: 1813, category: "Romance", status: "available", copies: 3, availableCopies: 3, description: "A romantic novel of manners about Elizabeth Bennet." },
+                    { id: 5, title: "The Catcher in the Rye", author: "J.D. Salinger", isbn: "978-0-316-76948-0", year: 1951, category: "Fiction", status: "available", copies: 2, availableCopies: 2, description: "A story about teenage angst and alienation." },
+                    { id: 6, title: "Mathematics for Beginners", author: "Dr. John Smith", isbn: "978-1-2345-6789-0", year: 2020, category: "Education", status: "available", copies: 5, availableCopies: 5, description: "Introduction to mathematics for young learners." },
+                    { id: 7, title: "Physics Fundamentals", author: "Dr. Sarah Johnson", isbn: "978-0-9876-5432-1", year: 2021, category: "Science", status: "available", copies: 4, availableCopies: 4, description: "Core physics concepts explained simply." },
+                    { id: 8, title: "World History", author: "Prof. James Wilson", isbn: "978-0-1234-5678-9", year: 2019, category: "History", status: "available", copies: 3, availableCopies: 3, description: "Comprehensive world history from ancient to modern times." }
+                ];
+                saveBooks();
+            }
+
+            if (savedTransactions) {
+                transactions = JSON.parse(savedTransactions);
+            } else {
+                // Start with empty transactions - you'll add your own
+                transactions = [];
+                saveTransactions();
+            }
+
+            updateStats();
+            renderBooks();
+            renderCirculation();
+        }
+
+        function saveBooks() {
+            localStorage.setItem('library_books', JSON.stringify(books));
+        }
+
+        function saveTransactions() {
+            localStorage.setItem('library_transactions', JSON.stringify(transactions));
+        }
+
+        function updateStats() {
+            const total = books.length;
+            const available = books.filter(b => b.status === 'available' && b.availableCopies > 0).length;
+            const borrowed = books.filter(b => b.status === 'borrowed').length;
+            const activeLoans = transactions.filter(t => t.status === 'active').length;
+
+            document.getElementById('totalBooks').textContent = total;
+            document.getElementById('availableBooks').textContent = available;
+            document.getElementById('borrowedBooks').textContent = borrowed;
+            document.getElementById('activeLoans').textContent = activeLoans;
+        }
+
+        function filterBooks() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            renderBooks(searchTerm);
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.filter === filter) {
+                    btn.classList.add('active');
+                }
+            });
+            filterBooks();
+        }
+
+        function renderBooks(searchTerm = '') {
+            let filteredBooks = [...books];
+
+            // Apply status filter
+            if (currentFilter !== 'all') {
+                filteredBooks = filteredBooks.filter(b => b.status === currentFilter);
+            }
+
+            // Apply search filter
+            if (searchTerm) {
+                filteredBooks = filteredBooks.filter(b =>
+                    b.title.toLowerCase().includes(searchTerm) ||
+                    b.author.toLowerCase().includes(searchTerm) ||
+                    (b.isbn && b.isbn.toLowerCase().includes(searchTerm))
+                );
+            }
+
+            const container = document.getElementById('booksList');
+
+            if (filteredBooks.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 3rem; color: #999;"><i class="fas fa-book-open" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>No books found</div>';
+                return;
+            }
+
+            container.innerHTML = filteredBooks.map(book => `
+                <div class="book-card">
+                    <div class="book-cover">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">${escapeHtml(book.title)}</div>
+                        <div class="book-author">by ${escapeHtml(book.author)}</div>
+                        <div class="book-details">
+                            <span><i class="fas fa-hashtag"></i> ${book.isbn || 'N/A'}</span>
+                            <span><i class="fas fa-calendar"></i> ${book.year || 'N/A'}</span>
+                            <span><i class="fas fa-tag"></i> ${book.category || 'General'}</span>
+                            <span><i class="fas fa-copy"></i> ${book.availableCopies}/${book.copies} available</span>
+                        </div>
+                        ${book.description ? `<div style="font-size: 0.75rem; color: #888; margin-top: 6px;"><i class="fas fa-align-left"></i> ${escapeHtml(book.description.substring(0, 100))}${book.description.length > 100 ? '...' : ''}</div>` : ''}
+                    </div>
+                    <div class="action-buttons">
+                        <span class="status-badge status-${book.status}">${book.status.toUpperCase()}</span>
+                        ${book.status === 'available' && book.availableCopies > 0 ? `
+                            <button class="btn-sm btn-primary" onclick="openBorrowModal(${book.id})">
+                                <i class="fas fa-hand-holding"></i> Borrow
+                            </button>
+                        ` : ''}
+                        ${book.status === 'borrowed' ? `
+                            <button class="btn-sm btn-outline" onclick="openReturnModal(${book.id})">
+                                <i class="fas fa-undo"></i> Return
+                            </button>
+                        ` : ''}
+                        <button class="btn-sm btn-outline" onclick="editBook(${book.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-sm btn-outline" onclick="deleteBook(${book.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCirculation() {
+            const tbody = document.getElementById('circulationTableBody');
+
+            if (transactions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-info-circle"></i> No transactions yet. Borrow books to see them here.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = transactions.slice(0, 10).map(t => `
+                <tr>
+                    <td>${t.date}</td>
+                    <td><strong>${escapeHtml(t.bookTitle)}</strong></td>
+                    <td>${escapeHtml(t.borrower)}</td>
+                    <td>${t.type === 'borrow' ? '<i class="fas fa-hand-holding"></i> Borrow' : '<i class="fas fa-calendar-check"></i> Reserve'}</td>
+                    <td>${t.dueDate || '—'}</td>
+                    <td><span class="status-badge" style="background: ${t.status === 'active' ? '#fef5e8' : '#e0f0ea'}; color: ${t.status === 'active' ? '#a75800' : '#0d5936'};">${t.status.toUpperCase()}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        // ============ CLEAR ALL FUNCTION ============
+        function openClearAllConfirm() {
+            if (books.length === 0 && transactions.length === 0) {
+                showToast('No library data to clear', 'error');
+                return;
+            }
+
+            const modalHtml = `
+                <div class="modal-overlay" id="clearConfirmModal">
+                    <div class="modal-container">
+                        <div class="modal-header">
+                            <h3><i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i> Confirm Clear All Library Data</h3>
+                            <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                        </div>
+                        <div class="modal-body confirm-modal">
+                            <div class="warning-icon">
+                                <i class="fas fa-trash-alt"></i>
+                            </div>
+                            <p><strong>Are you sure you want to delete ALL library data?</strong></p>
+                            <p style="color: #e74c3c; font-size: 0.85rem; margin-top: 0.5rem;">
+                                This action cannot be undone. You will lose:<br>
+                                📚 ${books.length} books<br>
+                                📋 ${transactions.length} transactions
+                            </p>
+                            <div class="confirm-modal-buttons">
+                                <button onclick="closeModal()" class="btn-outline" style="flex:1;">Cancel</button>
+                                <button onclick="clearAllLibraryData()" class="clear-all-btn" style="flex:1;">Yes, Delete All</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function clearAllLibraryData() {
+            // Clear books and transactions
+            books = [];
+            transactions = [];
+            saveBooks();
+            saveTransactions();
+            closeModal();
+            updateStats();
+            renderBooks();
+            renderCirculation();
+            showToast('All library data has been cleared!', 'success');
+        }
+
+        // ============ BOOK CRUD OPERATIONS ============
+        function openAddBookModal() {
+            const modalHtml = `
+                <div class="modal-overlay" id="bookModal">
+                    <div class="modal-container">
+                        <div class="modal-header">
+                            <h3><i class="fas fa-plus-circle"></i> Add New Book</h3>
+                            <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <form onsubmit="addBook(event)">
+                                <div class="form-group"><label>Title *</label><input type="text" id="bookTitle" required placeholder="Enter book title"></div>
+                                <div class="form-group"><label>Author *</label><input type="text" id="bookAuthor" required placeholder="Enter author name"></div>
+                                <div class="form-row">
+                                    <div class="form-group"><label>ISBN</label><input type="text" id="bookIsbn" placeholder="ISBN number"></div>
+                                    <div class="form-group"><label>Year</label><input type="number" id="bookYear" placeholder="Publication year"></div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group"><label>Category</label><input type="text" id="bookCategory" placeholder="Fiction, Science, etc."></div>
+                                    <div class="form-group"><label>Copies</label><input type="number" id="bookCopies" value="1" min="1"></div>
+                                </div>
+                                <div class="form-group"><label>Description</label><textarea id="bookDesc" rows="3" placeholder="Book description..."></textarea></div>
+                                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                    <button type="button" onclick="closeModal()" class="btn-outline" style="flex:1;">Cancel</button>
+                                    <button type="submit" class="btn-primary" style="flex:1;">Add Book</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function addBook(e) {
+            e.preventDefault();
+            const copies = parseInt(document.getElementById('bookCopies').value);
+            const newBook = {
+                id: Date.now(),
+                title: document.getElementById('bookTitle').value,
+                author: document.getElementById('bookAuthor').value,
+                isbn: document.getElementById('bookIsbn').value || null,
+                year: parseInt(document.getElementById('bookYear').value) || null,
+                category: document.getElementById('bookCategory').value || null,
+                status: 'available',
+                copies: copies,
+                availableCopies: copies,
+                description: document.getElementById('bookDesc').value || null
+            };
+            books.push(newBook);
+            saveBooks();
+            closeModal();
+            updateStats();
+            renderBooks();
+            showToast('Book added successfully!', 'success');
+        }
+
+        function editBook(bookId) {
+            const book = books.find(b => b.id === bookId);
+            if (!book) return;
+
+            const modalHtml = `
+                <div class="modal-overlay" id="bookModal">
+                    <div class="modal-container">
+                        <div class="modal-header">
+                            <h3><i class="fas fa-edit"></i> Edit Book</h3>
+                            <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <form onsubmit="updateBook(event, ${bookId})">
+                                <div class="form-group"><label>Title *</label><input type="text" id="bookTitle" value="${escapeHtml(book.title)}" required></div>
+                                <div class="form-group"><label>Author *</label><input type="text" id="bookAuthor" value="${escapeHtml(book.author)}" required></div>
+                                <div class="form-row">
+                                    <div class="form-group"><label>ISBN</label><input type="text" id="bookIsbn" value="${book.isbn || ''}"></div>
+                                    <div class="form-group"><label>Year</label><input type="number" id="bookYear" value="${book.year || ''}"></div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group"><label>Category</label><input type="text" id="bookCategory" value="${book.category || ''}"></div>
+                                    <div class="form-group"><label>Copies</label><input type="number" id="bookCopies" value="${book.copies}" min="1"></div>
+                                </div>
+                                <div class="form-group"><label>Description</label><textarea id="bookDesc" rows="3">${book.description || ''}</textarea></div>
+                                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                    <button type="button" onclick="closeModal()" class="btn-outline" style="flex:1;">Cancel</button>
+                                    <button type="submit" class="btn-primary" style="flex:1;">Update Book</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function updateBook(e, bookId) {
+            e.preventDefault();
+            const index = books.findIndex(b => b.id === bookId);
+            if (index !== -1) {
+                const copies = parseInt(document.getElementById('bookCopies').value);
+                books[index] = {
+                    ...books[index],
+                    title: document.getElementById('bookTitle').value,
+                    author: document.getElementById('bookAuthor').value,
+                    isbn: document.getElementById('bookIsbn').value || null,
+                    year: parseInt(document.getElementById('bookYear').value) || null,
+                    category: document.getElementById('bookCategory').value || null,
+                    copies: copies,
+                    availableCopies: Math.min(books[index].availableCopies, copies),
+                    description: document.getElementById('bookDesc').value || null
+                };
+                saveBooks();
+                closeModal();
+                updateStats();
+                renderBooks();
+                showToast('Book updated successfully!', 'success');
+            }
+        }
+
+        function deleteBook(bookId) {
+            if (confirm('Are you sure you want to delete this book?')) {
+                books = books.filter(b => b.id !== bookId);
+                saveBooks();
+                updateStats();
+                renderBooks();
+                showToast('Book deleted successfully!', 'success');
+            }
+        }
+
+        // ============ BORROW/RETURN OPERATIONS ============
+        function openBorrowModal(bookId) {
+            const book = books.find(b => b.id === bookId);
+            if (!book || book.availableCopies === 0) {
+                showToast('No copies available for borrowing', 'error');
+                return;
+            }
+
+            const borrowerName = prompt('Enter borrower name:', '');
+            if (!borrowerName) return;
+
+            const dueDate = prompt('Due date (YYYY-MM-DD):', getDefaultDueDate());
+            if (!dueDate) return;
+
+            borrowBook(bookId, borrowerName, dueDate);
+        }
+
+        function getDefaultDueDate() {
+            const date = new Date();
+            date.setDate(date.getDate() + 14);
+            return date.toISOString().split('T')[0];
+        }
+
+        function borrowBook(bookId, borrower, dueDate) {
+            const bookIndex = books.findIndex(b => b.id === bookId);
+            if (bookIndex === -1) return;
+
+            books[bookIndex].availableCopies--;
+            if (books[bookIndex].availableCopies === 0) {
+                books[bookIndex].status = 'borrowed';
+            }
+
+            const transaction = {
+                id: Date.now(),
+                bookId: bookId,
+                bookTitle: books[bookIndex].title,
+                borrower: borrower,
+                type: 'borrow',
+                date: new Date().toISOString().split('T')[0],
+                dueDate: dueDate,
+                status: 'active',
+                returnDate: null
+            };
+
+            transactions.unshift(transaction);
+            saveBooks();
+            saveTransactions();
+            updateStats();
+            renderBooks();
+            renderCirculation();
+            showToast(`"${books[bookIndex].title}" borrowed by ${borrower}`, 'success');
+        }
+
+        function openReturnModal(bookId) {
+            const activeTransaction = transactions.find(t => t.bookId === bookId && t.status === 'active');
+            if (!activeTransaction) {
+                showToast('No active borrowing record found', 'error');
+                return;
+            }
+
+            if (confirm(`Return "${activeTransaction.bookTitle}" borrowed by ${activeTransaction.borrower}?`)) {
+                returnBook(bookId, activeTransaction.id);
+            }
+        }
+
+        function returnBook(bookId, transactionId) {
+            const bookIndex = books.findIndex(b => b.id === bookId);
+            const transIndex = transactions.findIndex(t => t.id === transactionId);
+
+            if (bookIndex !== -1) {
+                books[bookIndex].availableCopies++;
+                if (books[bookIndex].availableCopies > 0) {
+                    books[bookIndex].status = 'available';
+                }
+            }
+
+            if (transIndex !== -1) {
+                transactions[transIndex].status = 'returned';
+                transactions[transIndex].returnDate = new Date().toISOString().split('T')[0];
+            }
+
+            saveBooks();
+            saveTransactions();
+            updateStats();
+            renderBooks();
+            renderCirculation();
+            showToast('Book returned successfully!', 'success');
+        }
+
+        function exportCirculationData() {
+            if (transactions.length === 0) {
+                showToast('No transactions to export', 'error');
+                return;
+            }
+
+            let csv = 'Date,Book Title,Borrower,Type,Due Date,Status,Return Date\n';
+            transactions.forEach(t => {
+                csv += `"${t.date}","${t.bookTitle}","${t.borrower}","${t.type}","${t.dueDate || ''}","${t.status}","${t.returnDate || ''}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `library_circulation_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Report exported successfully!', 'success');
+        }
+
+        // ============ UTILITIES ============
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function (m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function closeModal() {
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) modal.remove();
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.background = type === 'success' ? '#2ecc71' : '#e74c3c';
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Initialize
+        loadData();
+
+        // Make functions globally available
+        window.openClearAllConfirm = openClearAllConfirm;
+        window.clearAllLibraryData = clearAllLibraryData;
+        window.filterBooks = filterBooks;
+        window.setFilter = setFilter;
+        window.openAddBookModal = openAddBookModal;
+        window.editBook = editBook;
+        window.deleteBook = deleteBook;
+        window.openBorrowModal = openBorrowModal;
+        window.openReturnModal = openReturnModal;
+        window.exportCirculationData = exportCirculationData;
+        window.closeModal = closeModal;
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>School Dashboard | Starc Innovations</title>
+
+    <!-- PWA Meta Tags - ADD THIS SECTION -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Starc Edu">
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232d60ff'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3ES%3C/text%3E%3C/svg%3E">
+    <meta name="theme-color" content="#2d60ff">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- ============ APP LOADER - ADD RIGHT AFTER BODY TAG ============ -->
+    <div id="appLoader"
+        style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #f0f3fb; display: flex; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s;">
+        <div style="text-align: center;">
+            <div
+                style="width: 50px; height: 50px; border: 4px solid #e2e8f0; border-top-color: #2d60ff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;">
+            </div>
+            <div style="color: #1e2b4f;">Loading Starc Innovations...</div>
+        </div>
+    </div>
+
+    <!-- ============ OFFLINE INDICATOR - ADD AFTER APP LOADER ============ -->
+    <div id="offlineIndicator"
+        style="position: fixed; top: 0; left: 0; right: 0; background: #e74c3c; color: white; text-align: center; padding: 8px; font-size: 0.8rem; z-index: 10000; transform: translateY(-100%); transition: transform 0.3s;">
+        <i class="fas fa-wifi"></i> You are offline. Some features may be limited.
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2><i class="fas fa-graduation-cap"></i> Starc Innovations · edu</h2>
+        <ul>
+            <li class="active"><a href="index.html"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="students.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+            <li><a href="teachers.html"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
+            <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+            <li><a href="exams.html"><i class="fas fa-pen-to-square"></i> Exams</a></li>
+            <li><a href="fees.html"><i class="fas fa-coins"></i> Fees</a></li>
+            <li><a href="timetable.html"><i class="fas fa-table"></i> Timetable</a></li>
+            <li><a href="library.html"><i class="fas fa-book-open"></i> Library</a></li>
+            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <li><a href="settings.html"><i class="fas fa-sliders"></i> Settings</a></li>
+        </ul>
+
+        <!-- ============ INSTALL BUTTON - ADD BEFORE SIDEBAR FOOTER ============ -->
+        <button id="installBtn" onclick="installApp()"
+            style="display: none; background: #2d60ff; color: white; border: none; padding: 10px; border-radius: 40px; margin: 10px 0; cursor: pointer; width: 100%;">
+            <i class="fas fa-download"></i> Install App
+        </button>
+
+        <div class="sidebar-footer">
+            <i class="fas fa-circle" style="color:#3fe67b; font-size:0.5rem;"></i> admin · online
+        </div>
+    </div>
+
+    <div class="main-panel">
+        <div class="topbar">
+            <div class="page-title">
+                <h1><i class="fas fa-home"></i> Dashboard</h1>
+            </div>
+            <div class="profile-area">
+                <div class="badge-date"><i class="far fa-calendar-alt"></i> <span id="currentDate"></span></div>
+                <div class="profile-pill"><i class="fas fa-user-shield"></i> Admin</div>
+            </div>
+        </div>
+
+        <!-- STAT CARDS - Dynamic from localStorage -->
+        <div class="cards-grid">
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-users"></i> Total Students</div>
+                <div class="stat-number" id="totalStudents">0</div>
+                <div class="stat-trend"><i class="fas fa-arrow-up"></i> <span id="studentsTrend">0%</span></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-person-chalkboard"></i> Teachers</div>
+                <div class="stat-number" id="totalTeachers">0</div>
+                <div class="stat-trend"><i class="fas fa-arrow-up"></i> <span id="teachersTrend">0</span> new</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-sack-dollar"></i> Fees collected</div>
+                <div class="stat-number" id="totalFees">MWK0</div>
+                <div class="stat-trend"><i class="fas fa-arrow-up"></i> <span id="feesTrend">0%</span></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-user-check"></i> Attendance rate</div>
+                <div class="stat-number" id="attendanceRate">0%</div>
+                <div class="stat-trend"><i class="fas fa-arrow-down"></i> <span id="attendanceTrend">0%</span></div>
+            </div>
+        </div>
+
+        <!-- CHARTS -->
+        <div class="chart-row">
+            <div class="chart-card">
+                <div class="chart-header"><span><i class="fas fa-circle-check" style="color:#2ecc71;"></i>
+                        Attendance Distribution</span></div>
+                <canvas id="attendanceChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header"><span><i class="fas fa-chart-simple"></i> Subject Performance</span></div>
+                <canvas id="examChart"></canvas>
+            </div>
+        </div>
+
+        <!-- CALENDAR SECTION -->
+        <div class="section-title">
+            <h2><i class="fas fa-calendar-alt"></i> School Calendar</h2>
+            <button class="btn-outline" onclick="openAddEventModal()">
+                <i class="fas fa-plus"></i> Add Event
+            </button>
+        </div>
+        <div id="calendarContainer"></div>
+
+        <!-- RECENT STUDENTS -->
+        <div class="section-title">
+            <h2>Recent Students</h2>
+            <span class="badge-soft" id="recentStudentsCount">0 active</span>
+        </div>
+        <div class="glass-table">
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Form</th>
+                            <th>Guardian</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentStudentsTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="action-row">
+            <a href="students.html" class="btn-primary"><i class="fas fa-user-plus"></i> manage students</a>
+            <a href="fees.html" class="btn-outline"><i class="fas fa-credit-card"></i> fees overview</a>
+        </div>
+    </div>
+
+    <style>
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        // ============ APP LOADER HIDE ============
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('appLoader');
+            if (loader) {
+                setTimeout(() => {
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.remove(), 500);
+                }, 500);
+            }
+        });
+
+        // ============ OFFLINE STATUS ============
+        function updateOnlineStatus() {
+            const indicator = document.getElementById('offlineIndicator');
+            if (indicator) {
+                if (!navigator.onLine) {
+                    indicator.style.transform = 'translateY(0)';
+                } else {
+                    indicator.style.transform = 'translateY(-100%)';
+                }
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+
+        // ============ PWA INSTALLATION ============
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) {
+                installBtn.style.display = 'flex';
+                installBtn.addEventListener('click', () => {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted install');
+                        }
+                        deferredPrompt = null;
+                        installBtn.style.display = 'none';
+                    });
+                });
+            }
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+            }
+        }
+
+        // ============ DASHBOARD DATA LOADER ============
+        // Global chart instances
+        let attendanceChartInstance = null;
+        let examChartInstance = null;
+
+        // Load all data from localStorage
+        function loadDashboardData() {
+            // Load Students
+            const students = JSON.parse(localStorage.getItem('students_data')) || [];
+            document.getElementById('totalStudents').textContent = students.length;
+
+            // Calculate new students this month
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            const newStudents = students.filter(s => {
+                const enrollDate = new Date(s.enrollmentDate);
+                return enrollDate && enrollDate.getMonth() === currentMonth && enrollDate.getFullYear() === currentYear;
+            }).length;
+            const studentsTrend = students.length > 0 ? Math.round((newStudents / students.length) * 100) : 0;
+            document.getElementById('studentsTrend').textContent = studentsTrend + '%';
+
+            // Load Teachers
+            const teachers = JSON.parse(localStorage.getItem('teachers_data')) || [];
+            document.getElementById('totalTeachers').textContent = teachers.length;
+
+            // Calculate new teachers this month
+            const newTeachers = teachers.filter(t => {
+                const hireDate = new Date(t.hireDate);
+                return hireDate && hireDate.getMonth() === currentMonth && hireDate.getFullYear() === currentYear;
+            }).length;
+            document.getElementById('teachersTrend').textContent = newTeachers;
+
+            // Load Fees
+            const feeRecords = JSON.parse(localStorage.getItem('fee_records')) || [];
+            const totalCollected = feeRecords.reduce((sum, f) => sum + (f.paid || 0), 0);
+            const totalFeesMWK = totalCollected >= 1000000 ? `MWK ${(totalCollected / 1000000).toFixed(1)}M` : `MWK ${(totalCollected / 1000).toFixed(0)}k`;
+            document.getElementById('totalFees').textContent = totalFeesMWK;
+
+            // ============ ATTENDANCE DATA ============
+            let attendanceRecords = JSON.parse(localStorage.getItem('attendance_records')) || [];
+
+            let totalPresent = 0;
+            let totalLate = 0;
+            let totalAbsent = 0;
+
+            if (attendanceRecords.length > 0) {
+                attendanceRecords.forEach(record => {
+                    if (record.attendance) {
+                        const attendanceValues = Object.values(record.attendance);
+                        totalPresent += attendanceValues.filter(s => s === 'present').length;
+                        totalLate += attendanceValues.filter(s => s === 'late').length;
+                        totalAbsent += attendanceValues.filter(s => s === 'absent').length;
+                    } else if (record.present !== undefined) {
+                        totalPresent += record.present || 0;
+                        totalLate += record.late || 0;
+                        totalAbsent += record.absent || 0;
+                    }
+                });
+            }
+
+            const totalMarked = totalPresent + totalLate + totalAbsent;
+            const attendanceRate = totalMarked > 0 ? Math.round(((totalPresent + totalLate) / totalMarked) * 100) : 0;
+            document.getElementById('attendanceRate').textContent = attendanceRate + '%';
+
+            // ============ EXAMS DATA ============
+            const exams = JSON.parse(localStorage.getItem('exam_results')) || [];
+
+            // Display recent students
+            const recentStudents = students.slice(-5).reverse();
+            document.getElementById('recentStudentsCount').textContent = students.length + ' total';
+
+            const recentTable = document.getElementById('recentStudentsTable');
+            if (recentStudents.length === 0) {
+                recentTable.innerHTML = '<tr><td colspan="5" style="text-align: center;">No students added yet</td></tr>';
+            } else {
+                recentTable.innerHTML = recentStudents.map(s => `
+                    <tr>
+                        <td><strong>${escapeHtml(s.name)}</strong></td>
+                        <td>${s.form}</td>
+                        <td>${escapeHtml(s.guardian)}</td>
+                        <td>${s.phone}</td>
+                        <td><span class="badge-status">${s.status === 'active' ? 'Active' : 'Inactive'}</span></td>
+                    </tr>
+                `).join('');
+            }
+
+            updateAttendanceChart(totalPresent, totalLate, totalAbsent);
+            updateExamChart(exams);
+        }
+
+        function updateAttendanceChart(present, late, absent) {
+            const ctx = document.getElementById('attendanceChart').getContext('2d');
+            if (attendanceChartInstance) attendanceChartInstance.destroy();
+
+            const total = present + late + absent;
+
+            if (total === 0) {
+                attendanceChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['No Data'],
+                        datasets: [{ data: [1], backgroundColor: ['#e2e8f0'], borderWidth: 0 }]
+                    },
+                    options: { cutout: '65%', plugins: { legend: { position: 'bottom' } } }
+                });
+                return;
+            }
+
+            attendanceChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [`Present (${present})`, `Late (${late})`, `Absent (${absent})`],
+                    datasets: [{ data: [present, late, absent], backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c'], borderWidth: 0, hoverOffset: 6 }]
+                },
+                options: { cutout: '65%', responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        function updateExamChart(exams) {
+            const ctx = document.getElementById('examChart').getContext('2d');
+            if (examChartInstance) examChartInstance.destroy();
+
+            if (exams.length === 0) {
+                examChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: ['No Data Yet'], datasets: [{ label: 'Average Score (%)', data: [0], backgroundColor: '#95a5a6', borderRadius: 8 }] },
+                    options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { tooltip: { callbacks: { label: () => 'Add exam results in Exams page' } }, legend: { display: false } } }
+                });
+                return;
+            }
+
+            const subjectScores = {};
+            exams.forEach(exam => {
+                if (!subjectScores[exam.subject]) subjectScores[exam.subject] = { total: 0, count: 0 };
+                subjectScores[exam.subject].total += exam.score;
+                subjectScores[exam.subject].count++;
+            });
+
+            const subjects = Object.keys(subjectScores).slice(0, 8);
+            const averages = subjects.map(s => Math.round(subjectScores[s].total / subjectScores[s].count));
+
+            examChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: subjects, datasets: [{ label: 'Average Score (%)', data: averages, backgroundColor: '#4A90E2', borderRadius: 8, barPercentage: 0.7 }] },
+                options: { responsive: true, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
+            });
+        }
+
+        // ============ CALENDAR FUNCTIONS ============
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth();
+        let schoolEvents = [];
+
+        function loadEvents() {
+            const saved = localStorage.getItem('school_events');
+            if (saved) {
+                schoolEvents = JSON.parse(saved);
+            } else {
+                schoolEvents = [];
+                saveEvents();
+            }
+        }
+
+        function saveEvents() {
+            localStorage.setItem('school_events', JSON.stringify(schoolEvents));
+        }
+
+        function getTodayDate() {
+            const today = new Date();
+            return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        }
+
+        function getEventTypeColor(type) {
+            const colors = { meeting: '#F39C12', exam: '#E74C3C', holiday: '#2ECC71', sport: '#9B59B6', academic: '#4A90E2', other: '#95A5A6' };
+            return colors[type] || '#95A5A6';
+        }
+
+        function getEventTypeBg(type) {
+            const bg = { meeting: '#FEF5E8', exam: '#FEE8E6', holiday: '#E8F8F0', sport: '#F3E8FF', academic: '#E8F0FE', other: '#F5F5F5' };
+            return bg[type] || '#F5F5F5';
+        }
+
+        function renderCalendar() {
+            const container = document.getElementById('calendarContainer');
+            if (!container) return;
+
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startWeekday = firstDay.getDay();
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+            let html = `<div style="background: white; border-radius: 24px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 8px 20px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <button onclick="changeMonth(-1)" style="background: #f0f4ff; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer;">&lt;</button>
+                    <h2 style="font-size: 1.3rem; margin: 0;">${monthNames[currentMonth]} ${currentYear}</h2>
+                    <button onclick="changeMonth(1)" style="background: #f0f4ff; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer;">&gt;</button>
+                    <button onclick="goToToday()" style="background: #2d60ff; color: white; border: none; padding: 8px 16px; border-radius: 30px; cursor: pointer;">Today</button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; margin-bottom: 0.5rem; padding: 0.5rem 0; background: #f8fafc; border-radius: 12px; font-weight: 600;">
+                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;">`;
+
+            for (let i = 0; i < startWeekday; i++) {
+                html += '<div style="min-height: 90px; background: #fafbfe; border-radius: 12px; padding: 8px;"></div>';
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayEvents = schoolEvents.filter(e => e.date === dateStr);
+                const isToday = (new Date().getFullYear() === currentYear && new Date().getMonth() === currentMonth && new Date().getDate() === day);
+
+                html += `<div style="min-height: 90px; background: white; border: 1px solid #eef2ff; border-radius: 12px; padding: 8px; cursor: pointer; ${isToday ? 'border: 2px solid #2d60ff;' : ''}" onclick="openDayModal('${dateStr}')">
+                    <span style="font-weight: 600; font-size: 0.9rem;">${day}</span>
+                    <div style="margin-top: 4px;">`;
+
+                dayEvents.slice(0, 3).forEach(event => {
+                    html += `<div style="font-size: 0.7rem; padding: 2px 6px; background: ${getEventTypeBg(event.type)}; border-left: 3px solid ${getEventTypeColor(event.type)}; border-radius: 4px; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer;" 
+                             onclick="event.stopPropagation(); openEventDetails(${event.id})">
+                            ${event.title.substring(0, 15)}${event.title.length > 15 ? '...' : ''}
+                        </div>`;
+                });
+
+                if (dayEvents.length > 3) {
+                    html += `<div style="font-size: 0.65rem; color: #2d60ff; margin-top: 2px; text-align: center;">+${dayEvents.length - 3} more</div>`;
+                }
+
+                html += `</div></div>`;
+            }
+
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+
+        function changeMonth(delta) {
+            currentMonth += delta;
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            else if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            renderCalendar();
+        }
+
+        function goToToday() {
+            currentYear = new Date().getFullYear();
+            currentMonth = new Date().getMonth();
+            renderCalendar();
+        }
+
+        function openDayModal(dateStr) {
+            const events = schoolEvents.filter(e => e.date === dateStr);
+            const date = new Date(dateStr);
+            const weekday = date.toLocaleDateString('en-US', { weekday: 'long' });
+            const monthName = date.toLocaleDateString('en-US', { month: 'long' });
+
+            let eventsHtml = events.length === 0 ? '<p style="text-align: center; color: #999; padding: 2rem;">No events scheduled</p>' :
+                events.map(event => `
+                    <div style="padding: 1rem; border-left: 4px solid ${getEventTypeColor(event.type)}; background: ${getEventTypeBg(event.type)}; border-radius: 12px; margin-bottom: 0.8rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <div style="font-size: 0.8rem; color: #666;"><i class="fas fa-clock"></i> ${event.time || 'All day'}</div>
+                                <div style="font-weight: 600; margin: 4px 0;">${event.title}</div>
+                                ${event.location ? `<div style="font-size: 0.8rem; color: #666;"><i class="fas fa-map-marker-alt"></i> ${event.location}</div>` : ''}
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="event.stopPropagation(); closeModal(); editEvent(${event.id})" style="background: none; border: none; color: #2d60ff; cursor: pointer;"><i class="fas fa-edit"></i></button>
+                                <button onclick="event.stopPropagation(); deleteEventConfirm(${event.id})" style="background: none; border: none; color: #e74c3c; cursor: pointer;"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            const modalHtml = `<div id="dayModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+                <div style="background: white; border-radius: 24px; width: 90%; max-width: 550px; max-height: 80vh; overflow-y: auto;">
+                    <div style="padding: 1.5rem; border-bottom: 1px solid #eef2ff; display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0;">${weekday}, ${monthName} ${date.getDate()}, ${date.getFullYear()}</h3>
+                        <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        ${eventsHtml}
+                        <button onclick="closeModal(); openAddEventModal('${dateStr}')" style="width: 100%; background: #2d60ff; color: white; border: none; padding: 12px; border-radius: 40px; margin-top: 1rem; cursor: pointer;">
+                            <i class="fas fa-plus"></i> Add Event
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function openEventDetails(eventId) {
+            const event = schoolEvents.find(e => e.id === eventId);
+            if (!event) return;
+
+            const modalHtml = `<div id="eventModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+                <div style="background: white; border-radius: 24px; width: 90%; max-width: 500px;">
+                    <div style="padding: 1.5rem; border-bottom: 1px solid #eef2ff; background: ${getEventTypeBg(event.type)}; border-radius: 24px 24px 0 0; display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="color: ${getEventTypeColor(event.type)};">${event.title}</h3>
+                        <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <div><i class="fas fa-calendar-alt"></i> ${new Date(event.date).toLocaleDateString()}</div>
+                        <div><i class="fas fa-clock"></i> ${event.time || 'All day'}</div>
+                        ${event.location ? `<div><i class="fas fa-map-marker-alt"></i> ${event.location}</div>` : ''}
+                        ${event.description ? `<div><i class="fas fa-align-left"></i> ${event.description}</div>` : ''}
+                        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                            <button onclick="closeModal(); editEvent(${event.id})" style="flex:1; background:#2d60ff; color:white; border:none; padding:10px; border-radius:40px;">Edit</button>
+                            <button onclick="deleteEventConfirm(${event.id})" style="flex:1; background:#e74c3c; color:white; border:none; padding:10px; border-radius:40px;">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function openAddEventModal(defaultDate = null) {
+            const today = getTodayDate();
+            const modalHtml = `<div id="addEventModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+                <div style="background: white; border-radius: 24px; width: 90%; max-width: 500px;">
+                    <div style="padding: 1.5rem; border-bottom: 1px solid #eef2ff;">
+                        <h3>Add New Event</h3>
+                        <button onclick="closeModal()" style="float:right; background:none; border:none; font-size:1.5rem;">&times;</button>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <form onsubmit="submitEvent(event)">
+                            <div><label>Title *</label><input type="text" id="eventTitle" required style="width:100%; padding:8px; margin-bottom:1rem;"></div>
+                            <div><label>Type</label><select id="eventType" style="width:100%; padding:8px; margin-bottom:1rem;"><option value="academic">Academic</option><option value="exam">Exam</option><option value="holiday">Holiday</option><option value="meeting">Meeting</option><option value="sport">Sports</option><option value="other">Other</option></select></div>
+                            <div><label>Date *</label><input type="date" id="eventDate" value="${defaultDate || today}" required style="width:100%; padding:8px; margin-bottom:1rem;"></div>
+                            <div><label>Time</label><input type="time" id="eventTime" style="width:100%; padding:8px; margin-bottom:1rem;"></div>
+                            <div><label>Location</label><input type="text" id="eventLocation" style="width:100%; padding:8px; margin-bottom:1rem;"></div>
+                            <div><label>Description</label><textarea id="eventDesc" rows="3" style="width:100%; padding:8px; margin-bottom:1rem;"></textarea></div>
+                            <button type="submit" style="background:#2d60ff; color:white; border:none; padding:12px; width:100%; border-radius:40px;">Save Event</button>
+                        </form>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function editEvent(eventId) {
+            const event = schoolEvents.find(e => e.id === eventId);
+            if (!event) return;
+            closeModal();
+
+            const modalHtml = `<div id="editEventModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+                <div style="background: white; border-radius: 24px; width: 90%; max-width: 500px;">
+                    <div style="padding: 1.5rem; border-bottom: 1px solid #eef2ff;">
+                        <h3>Edit Event</h3>
+                        <button onclick="closeModal()" style="float:right; background:none; border:none; font-size:1.5rem;">&times;</button>
+                    </div>
+                    <div style="padding: 1.5rem;">
+                        <form onsubmit="updateEvent(event, ${eventId})">
+                            <div><label>Title *</label><input type="text" id="editEventTitle" value="${event.title.replace(/"/g, '&quot;')}" required style="width:100%; padding:8px; margin-bottom:1rem;"></div>
+                            <div><label>Type</label><select id="editEventType" style="width:100%; padding:8px; margin-bottom:1rem;"><option ${event.type === 'academic' ? 'selected' : ''}>academic</option><option ${event.type === 'exam' ? 'selected' : ''}>exam</option><option ${event.type === 'holiday' ? 'selected' : ''}>holiday</option><option ${event.type === 'meeting' ? 'selected' : ''}>meeting</option><option ${event.type === 'sport' ? 'selected' : ''}>sport</option><option ${event.type === 'other' ? 'selected' : ''}>other</option></select></div>
+                            <div><label>Date *</label><input type="date" id="editEventDate" value="${event.date}" required style="width:100%; padding:8px; margin-bottom:1rem;"></div>
+                            <div><label>Time</label><input type="time" id="editEventTime" value="${event.time || ''}" style="width:100%; padding:8px; margin-bottom:1rem;"></div>
+                            <div><label>Location</label><input type="text" id="editEventLocation" value="${event.location || ''}" style="width:100%; padding:8px; margin-bottom:1rem;"></div>
+                            <div><label>Description</label><textarea id="editEventDesc" rows="3" style="width:100%; padding:8px; margin-bottom:1rem;">${event.description || ''}</textarea></div>
+                            <button type="submit" style="background:#2d60ff; color:white; border:none; padding:12px; width:100%; border-radius:40px;">Update Event</button>
+                        </form>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function submitEvent(e) {
+            e.preventDefault();
+            schoolEvents.push({
+                id: Date.now(),
+                title: document.getElementById('eventTitle').value,
+                type: document.getElementById('eventType').value,
+                date: document.getElementById('eventDate').value,
+                time: document.getElementById('eventTime').value || null,
+                location: document.getElementById('eventLocation').value || null,
+                description: document.getElementById('eventDesc').value || null
+            });
+            saveEvents();
+            closeModal();
+            renderCalendar();
+            showToast('Event added!', 'success');
+        }
+
+        function updateEvent(e, eventId) {
+            e.preventDefault();
+            const index = schoolEvents.findIndex(ev => ev.id === eventId);
+            if (index !== -1) {
+                schoolEvents[index] = {
+                    ...schoolEvents[index],
+                    title: document.getElementById('editEventTitle').value,
+                    type: document.getElementById('editEventType').value,
+                    date: document.getElementById('editEventDate').value,
+                    time: document.getElementById('editEventTime').value || null,
+                    location: document.getElementById('editEventLocation').value || null,
+                    description: document.getElementById('editEventDesc').value || null
+                };
+                saveEvents();
+                closeModal();
+                renderCalendar();
+                showToast('Event updated!', 'success');
+            }
+        }
+
+        function deleteEventConfirm(eventId) {
+            if (confirm('Delete this event?')) {
+                schoolEvents = schoolEvents.filter(e => e.id !== eventId);
+                saveEvents();
+                closeModal();
+                renderCalendar();
+                showToast('Event deleted!', 'success');
+            }
+        }
+
+        function closeModal() {
+            const modals = document.querySelectorAll('#dayModal, #eventModal, #addEventModal, #editEventModal');
+            modals.forEach(modal => modal.remove());
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `position: fixed; bottom: 20px; right: 20px; background: ${type === 'success' ? '#2ecc71' : '#e74c3c'}; color: white; padding: 12px 20px; border-radius: 40px; z-index: 2000;`;
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+        }
+
+        // Set current date
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+        // Initialize everything
+        loadEvents();
+        loadDashboardData();
+        renderCalendar();
+
+        // Refresh dashboard data every 30 seconds
+        setInterval(loadDashboardData, 30000);
+
+        // ============ SERVICE WORKER REGISTRATION ============
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Service Worker registered', reg))
+                .catch(err => console.log('Service Worker registration failed', err));
+        }
+
+        // Make functions global for onclick handlers
+        window.changeMonth = changeMonth;
+        window.goToToday = goToToday;
+        window.openDayModal = openDayModal;
+        window.openEventDetails = openEventDetails;
+        window.openAddEventModal = openAddEventModal;
+        window.editEvent = editEvent;
+        window.deleteEventConfirm = deleteEventConfirm;
+        window.closeModal = closeModal;
+        window.submitEvent = submitEvent;
+        window.updateEvent = updateEvent;
+        window.installApp = installApp;
+    </script>
+</body>
+
+</html>

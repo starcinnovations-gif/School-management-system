@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Starc Edu">
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232d60ff'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3ES%3C/text%3E%3C/svg%3E">
+    <meta name="theme-color" content="#2d60ff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Timetable | Starc Innovations</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap"
+        rel="stylesheet">
+    <style>
+        /* Timetable specific styles */
+        .timetable-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .class-selector {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .class-btn {
+            padding: 10px 20px;
+            border-radius: 40px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .class-btn.active {
+            background: #2d60ff;
+            color: white;
+            border-color: #2d60ff;
+        }
+
+        .timetable-container {
+            overflow-x: auto;
+            margin-bottom: 2rem;
+        }
+
+        .timetable {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .timetable th,
+        .timetable td {
+            border: 1px solid #eef2ff;
+            padding: 12px;
+            text-align: center;
+            vertical-align: top;
+            min-width: 100px;
+        }
+
+        .timetable th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #1e2b4f;
+        }
+
+        .period-cell {
+            min-height: 80px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .period-cell:hover {
+            background: #f8faff;
+        }
+
+        .subject-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin: 2px;
+        }
+
+        /* Subject Colors */
+        .subject-English {
+            background: #fee8e6;
+            color: #c0392b;
+            border-left: 3px solid #c0392b;
+        }
+
+        .subject-Mathematics {
+            background: #e8f0fe;
+            color: #1e3a8a;
+            border-left: 3px solid #1e3a8a;
+        }
+
+        .subject-Chichewa {
+            background: #e0f0ea;
+            color: #0d5936;
+            border-left: 3px solid #0d5936;
+        }
+
+        .subject-Biology {
+            background: #e0f0ea;
+            color: #0d5936;
+            border-left: 3px solid #0d5936;
+        }
+
+        .subject-Agriculture {
+            background: #fef5e8;
+            color: #a75800;
+            border-left: 3px solid #a75800;
+        }
+
+        .subject-Physics {
+            background: #f3e8ff;
+            color: #6b21a5;
+            border-left: 3px solid #6b21a5;
+        }
+
+        .subject-Chemistry {
+            background: #fee8e6;
+            color: #c0392b;
+            border-left: 3px solid #c0392b;
+        }
+
+        .subject-Social {
+            background: #fef5e8;
+            color: #a75800;
+            border-left: 3px solid #a75800;
+        }
+
+        .subject-Geography {
+            background: #e8f0fe;
+            color: #1e3a8a;
+            border-left: 3px solid #1e3a8a;
+        }
+
+        .subject-Bible {
+            background: #f3e8ff;
+            color: #6b21a5;
+            border-left: 3px solid #6b21a5;
+        }
+
+        .subject-LifeSkills {
+            background: #e0f0ea;
+            color: #0d5936;
+            border-left: 3px solid #0d5936;
+        }
+
+        .subject-Computer {
+            background: #e8f0fe;
+            color: #1e3a8a;
+            border-left: 3px solid #1e3a8a;
+        }
+
+        .subject-History {
+            background: #fef5e8;
+            color: #a75800;
+            border-left: 3px solid #a75800;
+        }
+
+        .subject-Break {
+            background: #f0f0f0;
+            color: #666;
+            border-left: 3px solid #666;
+            font-style: italic;
+        }
+
+        .subject-Lunch {
+            background: #f0f0f0;
+            color: #666;
+            border-left: 3px solid #666;
+            font-style: italic;
+        }
+
+        .subject-Prep {
+            background: #e8f0fe;
+            color: #1e3a8a;
+            border-left: 3px solid #1e3a8a;
+            font-style: italic;
+        }
+
+        .teacher-name {
+            font-size: 0.7rem;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .edit-timetable-btn {
+            margin-top: 8px;
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .edit-timetable-btn:hover {
+            background: #2d60ff;
+            color: white;
+        }
+
+        .edit-timetable-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #eef2ff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 40px;
+            color: white;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+
+            .timetable th,
+            .timetable td {
+                padding: 8px;
+                font-size: 0.75rem;
+                min-width: 80px;
+            }
+
+            .subject-badge {
+                font-size: 0.7rem;
+                padding: 4px 8px;
+            }
+
+            .class-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+        }
+
+        .prep-notice {
+            background: #fef5e8;
+            border-left: 4px solid #a75800;
+            padding: 0.8rem;
+            margin-top: 1rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Service Worker registered', reg))
+                .catch(err => console.log('Service Worker registration failed', err));
+        }
+
+        // Install prompt for PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // Optional: Show install button
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) {
+                installBtn.style.display = 'flex';
+                installBtn.addEventListener('click', () => {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted install');
+                        }
+                        deferredPrompt = null;
+                        installBtn.style.display = 'none';
+                    });
+                });
+            }
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+            }
+        }
+    </script>
+    <div class="sidebar">
+        <h2><i class="fas fa-graduation-cap"></i> Starc Innovations · edu</h2>
+        <ul>
+            <li><a href="index.html"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="students.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+            <li><a href="teachers.html"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
+            <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+            <li><a href="exams.html"><i class="fas fa-pen-to-square"></i> Exams</a></li>
+            <li><a href="fees.html"><i class="fas fa-coins"></i> Fees</a></li>
+            <li class="active"><a href="timetable.html"><i class="fas fa-table"></i> Timetable</a></li>
+            <li><a href="library.html"><i class="fas fa-book-open"></i> Library</a></li>
+            <li><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <li><a href="settings.html"><i class="fas fa-sliders"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <i class="fas fa-circle" style="color:#3fe67b; font-size:0.5rem;"></i> admin · online
+        </div>
+        <button id="installBtn" onclick="installApp()"
+            style="display: none; background: #2d60ff; color: white; border: none; padding: 10px; border-radius: 40px; margin: 10px 0; cursor: pointer; width: 100%;">
+            <i class="fas fa-download"></i> Install App
+        </button>
+    </div>
+
+    <div class="main-panel">
+        <div class="topbar">
+            <div class="page-title">
+                <h1><i class="fas fa-table"></i> Timetable Management</h1>
+            </div>
+            <div class="profile-pill">
+                <i class="fas fa-user-shield"></i> Admin
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="timetable-controls">
+            <div class="class-selector" id="classSelector">
+                <button class="class-btn active" data-class="Form 1">Form 1</button>
+                <button class="class-btn" data-class="Form 2">Form 2</button>
+                <button class="class-btn" data-class="Form 3">Form 3</button>
+                <button class="class-btn" data-class="Form 4">Form 4</button>
+            </div>
+            <button class="btn-primary" onclick="addNewPeriod()">
+                <i class="fas fa-plus"></i> Add Period
+            </button>
+        </div>
+
+        <!-- Timetable Display -->
+        <div class="timetable-container">
+            <table class="timetable" id="timetable">
+                <thead>
+                    <tr id="timetableHeader"> </tr>
+                </thead>
+                <tbody id="timetableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Prep Notice -->
+        <div class="prep-notice">
+            <i class="fas fa-clock"></i> <strong>Prep Session:</strong> 16:00 - 17:00 (For Form 2 and Form 4 students
+            only)
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #fee8e6;"></div><span>English</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e8f0fe;"></div><span>Mathematics</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e0f0ea;"></div><span>Chichewa / Biology / Life
+                    Skills</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #fef5e8;"></div><span>Agriculture / Social / History</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f3e8ff;"></div><span>Physics / Chemistry / Bible</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e8f0fe;"></div><span>Geography / Computer</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f0f0f0;"></div><span>Break (9:30-10:00)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f0f0f0;"></div><span>Lunch (12:00-13:30)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e8f0fe;"></div><span>Prep Session (16:00-17:00)</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ TIMETABLE DATA ============
+        let timetableData = {};
+        let currentClass = 'Form 1';
+
+        // Days of the week
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+        // All subjects for secondary school
+        const allSubjects = [
+            'English', 'Mathematics', 'Chichewa', 'Biology', 'Agriculture',
+            'Physics', 'Chemistry', 'Social Studies', 'Geography', 'Bible Knowledge',
+            'Life Skills', 'Computer', 'History'
+        ];
+
+        // Time periods
+        const periods = [
+            { time: '07:30 - 08:30', type: 'class', index: 0 },
+            { time: '08:30 - 09:30', type: 'class', index: 1 },
+            { time: '09:30 - 10:00', type: 'break', name: 'Short Break' },
+            { time: '10:00 - 11:00', type: 'class', index: 2 },
+            { time: '11:00 - 12:00', type: 'class', index: 3 },
+            { time: '12:00 - 13:30', type: 'lunch', name: 'Lunch Break' },
+            { time: '13:30 - 14:30', type: 'class', index: 4 },
+            { time: '14:30 - 15:30', type: 'class', index: 5 },
+            { time: '16:00 - 17:00', type: 'prep', name: 'Prep Session' }
+        ];
+
+        // Sample teachers
+        const teachers = [
+            'Mr. Chileshe', 'Ms. Tembo', 'Dr. Banda', 'Mrs. Phiri',
+            'Mr. Zulu', 'Ms. Chirwa', 'Prof. Mwale', 'Mrs. Gondwe',
+            'Mr. Banda', 'Ms. Kayira', 'Dr. Manda', 'Mrs. Mwale'
+        ];
+
+        // Load timetable data from localStorage
+        function loadTimetableData() {
+            const saved = localStorage.getItem('timetable_data');
+            if (saved) {
+                timetableData = JSON.parse(saved);
+            } else {
+                // Create sample timetables for Form 1-4
+                timetableData = {
+                    'Form 1': {
+                        Monday: {
+                            0: { subject: 'English', teacher: 'Ms. Tembo' },
+                            1: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            2: { subject: 'Chichewa', teacher: 'Mrs. Phiri' },
+                            3: { subject: 'Biology', teacher: 'Dr. Banda' },
+                            4: { subject: 'Agriculture', teacher: 'Mr. Zulu' },
+                            5: { subject: 'Social Studies', teacher: 'Ms. Chirwa' }
+                        },
+                        Tuesday: {
+                            0: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            1: { subject: 'English', teacher: 'Ms. Tembo' },
+                            2: { subject: 'Geography', teacher: 'Mrs. Gondwe' },
+                            3: { subject: 'Life Skills', teacher: 'Ms. Kayira' },
+                            4: { subject: 'Computer', teacher: 'Prof. Mwale' },
+                            5: { subject: 'Bible Knowledge', teacher: 'Mr. Banda' }
+                        },
+                        Wednesday: {
+                            0: { subject: 'Biology', teacher: 'Dr. Banda' },
+                            1: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            2: { subject: 'English', teacher: 'Ms. Tembo' },
+                            3: { subject: 'Chichewa', teacher: 'Mrs. Phiri' },
+                            4: { subject: 'History', teacher: 'Mr. Zulu' },
+                            5: { subject: 'Agriculture', teacher: 'Ms. Chirwa' }
+                        },
+                        Thursday: {
+                            0: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            1: { subject: 'Physics', teacher: 'Dr. Manda' },
+                            2: { subject: 'English', teacher: 'Ms. Tembo' },
+                            3: { subject: 'Chemistry', teacher: 'Prof. Mwale' },
+                            4: { subject: 'Geography', teacher: 'Mrs. Gondwe' },
+                            5: { subject: 'Computer', teacher: 'Ms. Kayira' }
+                        },
+                        Friday: {
+                            0: { subject: 'English', teacher: 'Ms. Tembo' },
+                            1: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            2: { subject: 'Social Studies', teacher: 'Mr. Zulu' },
+                            3: { subject: 'Life Skills', teacher: 'Mrs. Mwale' },
+                            4: { subject: 'Bible Knowledge', teacher: 'Mr. Banda' },
+                            5: { subject: 'Chichewa', teacher: 'Mrs. Phiri' }
+                        }
+                    },
+                    'Form 2': {
+                        Monday: {
+                            0: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            1: { subject: 'English', teacher: 'Ms. Tembo' },
+                            2: { subject: 'Physics', teacher: 'Dr. Manda' },
+                            3: { subject: 'Chemistry', teacher: 'Prof. Mwale' },
+                            4: { subject: 'Biology', teacher: 'Dr. Banda' },
+                            5: { subject: 'Computer', teacher: 'Ms. Kayira' }
+                        },
+                        Tuesday: {
+                            0: { subject: 'English', teacher: 'Ms. Tembo' },
+                            1: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            2: { subject: 'Geography', teacher: 'Mrs. Gondwe' },
+                            3: { subject: 'History', teacher: 'Mr. Zulu' },
+                            4: { subject: 'Agriculture', teacher: 'Ms. Chirwa' },
+                            5: { subject: 'Life Skills', teacher: 'Mrs. Mwale' }
+                        },
+                        Wednesday: {
+                            0: { subject: 'Chemistry', teacher: 'Prof. Mwale' },
+                            1: { subject: 'Physics', teacher: 'Dr. Manda' },
+                            2: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            3: { subject: 'English', teacher: 'Ms. Tembo' },
+                            4: { subject: 'Chichewa', teacher: 'Mrs. Phiri' },
+                            5: { subject: 'Bible Knowledge', teacher: 'Mr. Banda' }
+                        },
+                        Thursday: {
+                            0: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            1: { subject: 'English', teacher: 'Ms. Tembo' },
+                            2: { subject: 'Biology', teacher: 'Dr. Banda' },
+                            3: { subject: 'Agriculture', teacher: 'Ms. Chirwa' },
+                            4: { subject: 'Social Studies', teacher: 'Mr. Zulu' },
+                            5: { subject: 'Computer', teacher: 'Ms. Kayira' }
+                        },
+                        Friday: {
+                            0: { subject: 'English', teacher: 'Ms. Tembo' },
+                            1: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            2: { subject: 'Geography', teacher: 'Mrs. Gondwe' },
+                            3: { subject: 'History', teacher: 'Mr. Zulu' },
+                            4: { subject: 'Life Skills', teacher: 'Mrs. Mwale' },
+                            5: { subject: 'Chichewa', teacher: 'Mrs. Phiri' }
+                        }
+                    },
+                    'Form 3': {
+                        Monday: {
+                            0: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            1: { subject: 'English', teacher: 'Ms. Tembo' },
+                            2: { subject: 'Physics', teacher: 'Dr. Manda' },
+                            3: { subject: 'Chemistry', teacher: 'Prof. Mwale' },
+                            4: { subject: 'Biology', teacher: 'Dr. Banda' },
+                            5: { subject: 'Computer', teacher: 'Ms. Kayira' }
+                        },
+                        Tuesday: {
+                            0: { subject: 'English', teacher: 'Ms. Tembo' },
+                            1: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            2: { subject: 'Geography', teacher: 'Mrs. Gondwe' },
+                            3: { subject: 'History', teacher: 'Mr. Zulu' },
+                            4: { subject: 'Agriculture', teacher: 'Ms. Chirwa' },
+                            5: { subject: 'Bible Knowledge', teacher: 'Mr. Banda' }
+                        },
+                        Wednesday: {
+                            0: { subject: 'Chemistry', teacher: 'Prof. Mwale' },
+                            1: { subject: 'Physics', teacher: 'Dr. Manda' },
+                            2: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            3: { subject: 'English', teacher: 'Ms. Tembo' },
+                            4: { subject: 'Social Studies', teacher: 'Mr. Zulu' },
+                            5: { subject: 'Life Skills', teacher: 'Mrs. Mwale' }
+                        },
+                        Thursday: {
+                            0: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            1: { subject: 'English', teacher: 'Ms. Tembo' },
+                            2: { subject: 'Biology', teacher: 'Dr. Banda' },
+                            3: { subject: 'Chemistry', teacher: 'Prof. Mwale' },
+                            4: { subject: 'Geography', teacher: 'Mrs. Gondwe' },
+                            5: { subject: 'Computer', teacher: 'Ms. Kayira' }
+                        },
+                        Friday: {
+                            0: { subject: 'English', teacher: 'Ms. Tembo' },
+                            1: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            2: { subject: 'Physics', teacher: 'Dr. Manda' },
+                            3: { subject: 'Chichewa', teacher: 'Mrs. Phiri' },
+                            4: { subject: 'History', teacher: 'Mr. Zulu' },
+                            5: { subject: 'Agriculture', teacher: 'Ms. Chirwa' }
+                        }
+                    },
+                    'Form 4': {
+                        Monday: {
+                            0: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            1: { subject: 'English', teacher: 'Ms. Tembo' },
+                            2: { subject: 'Physics', teacher: 'Dr. Manda' },
+                            3: { subject: 'Chemistry', teacher: 'Prof. Mwale' },
+                            4: { subject: 'Biology', teacher: 'Dr. Banda' },
+                            5: { subject: 'Computer', teacher: 'Ms. Kayira' }
+                        },
+                        Tuesday: {
+                            0: { subject: 'English', teacher: 'Ms. Tembo' },
+                            1: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            2: { subject: 'Geography', teacher: 'Mrs. Gondwe' },
+                            3: { subject: 'History', teacher: 'Mr. Zulu' },
+                            4: { subject: 'Agriculture', teacher: 'Ms. Chirwa' },
+                            5: { subject: 'Life Skills', teacher: 'Mrs. Mwale' }
+                        },
+                        Wednesday: {
+                            0: { subject: 'Chemistry', teacher: 'Prof. Mwale' },
+                            1: { subject: 'Physics', teacher: 'Dr. Manda' },
+                            2: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            3: { subject: 'English', teacher: 'Ms. Tembo' },
+                            4: { subject: 'Social Studies', teacher: 'Mr. Zulu' },
+                            5: { subject: 'Bible Knowledge', teacher: 'Mr. Banda' }
+                        },
+                        Thursday: {
+                            0: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            1: { subject: 'English', teacher: 'Ms. Tembo' },
+                            2: { subject: 'Biology', teacher: 'Dr. Banda' },
+                            3: { subject: 'Chemistry', teacher: 'Prof. Mwale' },
+                            4: { subject: 'Geography', teacher: 'Mrs. Gondwe' },
+                            5: { subject: 'Computer', teacher: 'Ms. Kayira' }
+                        },
+                        Friday: {
+                            0: { subject: 'English', teacher: 'Ms. Tembo' },
+                            1: { subject: 'Mathematics', teacher: 'Mr. Chileshe' },
+                            2: { subject: 'Physics', teacher: 'Dr. Manda' },
+                            3: { subject: 'Chichewa', teacher: 'Mrs. Phiri' },
+                            4: { subject: 'History', teacher: 'Mr. Zulu' },
+                            5: { subject: 'Agriculture', teacher: 'Ms. Chirwa' }
+                        }
+                    }
+                };
+                saveTimetableData();
+            }
+        }
+
+        function saveTimetableData() {
+            localStorage.setItem('timetable_data', JSON.stringify(timetableData));
+        }
+
+        // Render the timetable
+        function renderTimetable() {
+            // Ensure class data exists
+            if (!timetableData[currentClass]) {
+                timetableData[currentClass] = {};
+                days.forEach(day => {
+                    timetableData[currentClass][day] = {};
+                });
+                saveTimetableData();
+            }
+
+            // Render header
+            const headerRow = document.getElementById('timetableHeader');
+            headerRow.innerHTML = '<th>Time / Day</th>' + days.map(day => `<th>${day}</th>`).join('');
+
+            // Render body
+            const body = document.getElementById('timetableBody');
+            body.innerHTML = '';
+
+            periods.forEach((period, periodIndex) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td style="font-weight: 600; background: #f8fafc;">${period.time}</td>`;
+
+                days.forEach(day => {
+                    const cell = document.createElement('td');
+                    cell.className = 'period-cell';
+
+                    // Break period
+                    if (period.type === 'break') {
+                        cell.innerHTML = `
+                            <div class="subject-badge subject-Break">
+                                ☕ Morning Break
+                            </div>
+                            <button class="edit-timetable-btn disabled" disabled>
+                                <i class="fas fa-lock"></i> Fixed
+                            </button>
+                        `;
+                    }
+                    // Lunch period
+                    else if (period.type === 'lunch') {
+                        cell.innerHTML = `
+                            <div class="subject-badge subject-Lunch">
+                                🍽️ Lunch Break
+                            </div>
+                            <button class="edit-timetable-btn disabled" disabled>
+                                <i class="fas fa-lock"></i> Fixed
+                            </button>
+                        `;
+                    }
+                    // Prep Session
+                    else if (period.type === 'prep') {
+                        // Prep only for Form 2 and Form 4
+                        const isPrepClass = currentClass === 'Form 2' || currentClass === 'Form 4';
+                        if (isPrepClass) {
+                            cell.innerHTML = `
+                                <div class="subject-badge subject-Prep">
+                                    📚 Prep Session (Self Study)
+                                </div>
+                                <button class="edit-timetable-btn disabled" disabled>
+                                    <i class="fas fa-lock"></i> Fixed
+                                </button>
+                            `;
+                        } else {
+                            cell.innerHTML = `
+                                <div style="color: #999; font-size: 0.8rem;">No Prep</div>
+                                <button class="edit-timetable-btn disabled" disabled>
+                                    <i class="fas fa-ban"></i> Not Required
+                                </button>
+                            `;
+                        }
+                    }
+                    // Class periods
+                    else {
+                        const classIndex = period.index;
+                        const periodData = timetableData[currentClass][day]?.[classIndex];
+
+                        if (periodData && periodData.subject) {
+                            const subjectKey = periodData.subject.replace(/\s+/g, '');
+                            cell.innerHTML = `
+                                <div class="subject-badge subject-${subjectKey}">
+                                    ${periodData.subject}
+                                    <div class="teacher-name">${periodData.teacher || 'Staff'}</div>
+                                </div>
+                                <button class="edit-timetable-btn" onclick="editPeriod('${day}', ${classIndex})">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                            `;
+                        } else {
+                            cell.innerHTML = `
+                                <div style="color: #999; font-size: 0.8rem;">Empty</div>
+                                <button class="edit-timetable-btn" onclick="editPeriod('${day}', ${classIndex})">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            `;
+                        }
+                    }
+
+                    row.appendChild(cell);
+                });
+
+                body.appendChild(row);
+            });
+        }
+
+        // Edit a period
+        function editPeriod(day, classIndex) {
+            const periodData = timetableData[currentClass]?.[day]?.[classIndex] || { subject: '', teacher: '' };
+
+            const modalHtml = `
+                <div class="modal-overlay" id="editPeriodModal">
+                    <div class="modal-container">
+                        <div class="modal-header">
+                            <h3><i class="fas fa-edit"></i> Edit Class Period</h3>
+                            <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <form onsubmit="savePeriod(event, '${day}', ${classIndex})">
+                                <div class="form-group">
+                                    <label>Subject</label>
+                                    <select id="subjectSelect" required>
+                                        <option value="">-- Select Subject --</option>
+                                        ${allSubjects.map(s => `<option value="${s}" ${periodData.subject === s ? 'selected' : ''}>${s}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Teacher</label>
+                                    <select id="teacherSelect" required>
+                                        <option value="">-- Select Teacher --</option>
+                                        ${teachers.map(t => `<option value="${t}" ${periodData.teacher === t ? 'selected' : ''}>${t}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                                    <button type="button" onclick="closeModal()" class="btn-outline" style="flex:1;">Cancel</button>
+                                    <button type="submit" class="btn-primary" style="flex:1;">Save Period</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        // Save period
+        function savePeriod(event, day, classIndex) {
+            event.preventDefault();
+
+            const subject = document.getElementById('subjectSelect').value;
+            const teacher = document.getElementById('teacherSelect').value;
+
+            if (!subject) {
+                showToast('Please select a subject', 'error');
+                return;
+            }
+
+            if (!teacher) {
+                showToast('Please select a teacher', 'error');
+                return;
+            }
+
+            if (!timetableData[currentClass]) {
+                timetableData[currentClass] = {};
+            }
+            if (!timetableData[currentClass][day]) {
+                timetableData[currentClass][day] = {};
+            }
+
+            timetableData[currentClass][day][classIndex] = {
+                subject: subject,
+                teacher: teacher
+            };
+
+            saveTimetableData();
+            renderTimetable();
+            closeModal();
+            showToast('Period saved successfully!', 'success');
+        }
+
+        // Add new period
+        function addNewPeriod() {
+            showToast('Click on any empty period to add a subject', 'info');
+        }
+
+        // Copy timetable from one class to another
+        function copyTimetable(fromClass, toClass) {
+            if (confirm(`Copy timetable from ${fromClass} to ${toClass}? This will overwrite existing data.`)) {
+                timetableData[toClass] = JSON.parse(JSON.stringify(timetableData[fromClass]));
+                saveTimetableData();
+                if (currentClass === toClass) {
+                    renderTimetable();
+                }
+                showToast(`Timetable copied from ${fromClass} to ${toClass}`, 'success');
+            }
+        }
+
+        // Clear all periods for a class
+        function clearTimetable() {
+            if (confirm(`Clear all periods for ${currentClass}? This cannot be undone.`)) {
+                timetableData[currentClass] = {};
+                days.forEach(day => {
+                    timetableData[currentClass][day] = {};
+                });
+                saveTimetableData();
+                renderTimetable();
+                showToast(`Timetable cleared for ${currentClass}`, 'success');
+            }
+        }
+
+        // Export timetable to CSV
+        function exportTimetable() {
+            let csv = 'Period/Time,' + days.join(',') + '\n';
+
+            periods.forEach((period) => {
+                const row = [period.time];
+                days.forEach(day => {
+                    if (period.type === 'break') {
+                        row.push('Morning Break');
+                    } else if (period.type === 'lunch') {
+                        row.push('Lunch Break');
+                    } else if (period.type === 'prep') {
+                        const isPrepClass = currentClass === 'Form 2' || currentClass === 'Form 4';
+                        row.push(isPrepClass ? 'Prep Session' : 'No Prep');
+                    } else {
+                        const classIndex = period.index;
+                        const periodData = timetableData[currentClass]?.[day]?.[classIndex];
+                        row.push(periodData ? `${periodData.subject} (${periodData.teacher})` : 'Empty');
+                    }
+                });
+                csv += row.join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `timetable_${currentClass.replace(/\s/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Timetable exported successfully!', 'success');
+        }
+
+        // Add export and clear buttons
+        function addAdditionalButtons() {
+            const controls = document.querySelector('.timetable-controls');
+            const buttonGroup = document.createElement('div');
+            buttonGroup.style.display = 'flex';
+            buttonGroup.style.gap = '0.5rem';
+            buttonGroup.innerHTML = `
+                <button class="btn-outline" onclick="exportTimetable()">
+                    <i class="fas fa-download"></i> Export CSV
+                </button>
+                <button class="btn-outline" onclick="clearTimetable()" style="border-color: #e74c3c; color: #e74c3c;">
+                    <i class="fas fa-trash"></i> Clear All
+                </button>
+            `;
+            controls.appendChild(buttonGroup);
+        }
+
+        // Class switching
+        function initClassSelector() {
+            document.querySelectorAll('.class-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentClass = btn.dataset.class;
+                    renderTimetable();
+                });
+            });
+        }
+
+        function closeModal() {
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) modal.remove();
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.background = type === 'success' ? '#2ecc71' : type === 'info' ? '#3498db' : '#e74c3c';
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'info' ? 'info-circle' : 'exclamation-circle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Add copy functionality
+        function addCopyFunctionality() {
+            const classSelector = document.querySelector('.class-selector');
+            const copyButton = document.createElement('button');
+            copyButton.className = 'btn-outline';
+            copyButton.innerHTML = '<i class="fas fa-copy"></i> Copy from...';
+            copyButton.style.marginLeft = 'auto';
+            copyButton.onclick = () => {
+                const fromClass = prompt('Copy FROM which class? (Form 1, Form 2, Form 3, Form 4)', 'Form 1');
+                const toClass = prompt('Copy TO which class?', currentClass);
+                if (fromClass && toClass && timetableData[fromClass]) {
+                    copyTimetable(fromClass, toClass);
+                } else {
+                    showToast('Invalid class selection', 'error');
+                }
+            };
+            classSelector.parentNode.insertBefore(copyButton, classSelector.nextSibling);
+        }
+
+        // Initialize
+        loadTimetableData();
+        initClassSelector();
+        renderTimetable();
+        addAdditionalButtons();
+        addCopyFunctionality();
+
+        // Make functions globally available
+        window.editPeriod = editPeriod;
+        window.savePeriod = savePeriod;
+        window.addNewPeriod = addNewPeriod;
+        window.exportTimetable = exportTimetable;
+        window.clearTimetable = clearTimetable;
+        window.closeModal = closeModal;
+        window.copyTimetable = copyTimetable;
+    </script>
+</body>
+
+</html>

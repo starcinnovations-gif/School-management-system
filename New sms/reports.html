@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Starc Edu">
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232d60ff'/%3E%3Ctext x='50' y='67' font-size='50' text-anchor='middle' fill='white' font-family='Arial'%3ES%3C/text%3E%3C/svg%3E">
+    <meta name="theme-color" content="#2d60ff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Reports | Starc Innovations</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        /* Additional styles for reports page */
+        .section-title {
+            margin: 2rem 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .btn-export-sm {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border-radius: 20px;
+            background: #2d60ff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .score-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .score-high {
+            background: #e0f0ea;
+            color: #0d5936;
+        }
+
+        .score-medium {
+            background: #fef5e8;
+            color: #a75800;
+        }
+
+        .score-low {
+            background: #fee8e6;
+            color: #c0392b;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .status-paid {
+            background: #e0f0ea;
+            color: #0d5936;
+        }
+
+        .status-partial {
+            background: #fef5e8;
+            color: #a75800;
+        }
+
+        .status-unpaid {
+            background: #fee8e6;
+            color: #c0392b;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Service Worker registered', reg))
+                .catch(err => console.log('Service Worker registration failed', err));
+        }
+
+        // Install prompt for PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+
+            // Optional: Show install button
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) {
+                installBtn.style.display = 'flex';
+                installBtn.addEventListener('click', () => {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted install');
+                        }
+                        deferredPrompt = null;
+                        installBtn.style.display = 'none';
+                    });
+                });
+            }
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+            }
+        }
+    </script>
+    <div class="sidebar">
+        <h2><i class="fas fa-graduation-cap"></i> Starc Innovations · edu</h2>
+        <ul>
+            <li><a href="index.html"><i class="fas fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="students.html"><i class="fas fa-user-graduate"></i> Students</a></li>
+            <li><a href="teachers.html"><i class="fas fa-chalkboard-user"></i> Teachers</a></li>
+            <li><a href="attendance.html"><i class="fas fa-calendar-check"></i> Attendance</a></li>
+            <li><a href="exams.html"><i class="fas fa-pen-to-square"></i> Exams</a></li>
+            <li><a href="fees.html"><i class="fas fa-coins"></i> Fees</a></li>
+            <li><a href="timetable.html"><i class="fas fa-table"></i> Timetable</a></li>
+            <li><a href="library.html"><i class="fas fa-book-open"></i> Library</a></li>
+            <li class="active"><a href="reports.html"><i class="fas fa-chart-line"></i> Reports</a></li>
+            <li><a href="settings.html"><i class="fas fa-sliders"></i> Settings</a></li>
+        </ul>
+        <div class="sidebar-footer"><i class="fas fa-circle" style="color:#3fe67b;"></i> admin · online</div>
+        <button id="installBtn" onclick="installApp()"
+            style="display: none; background: #2d60ff; color: white; border: none; padding: 10px; border-radius: 40px; margin: 10px 0; cursor: pointer; width: 100%;">
+            <i class="fas fa-download"></i> Install App
+        </button>
+    </div>
+
+    <div class="main-panel">
+        <div class="topbar">
+            <div class="page-title">
+                <h1><i class="fas fa-chart-line"></i> Reports & Export</h1>
+            </div>
+            <div class="profile-pill"><i class="fas fa-user-shield"></i> Admin</div>
+        </div>
+
+        <!-- summary cards (dynamic from localStorage) -->
+        <div class="cards-grid" id="summaryCards">
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-users"></i> Students</div>
+                <div class="stat-number" id="totalStudents">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-coins"></i> Fees collected</div>
+                <div class="stat-number" id="totalFees">MWK0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-user-check"></i> Attendance Rate</div>
+                <div class="stat-number" id="avgAttendance">0%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title"><i class="fas fa-pen-to-square"></i> Exams Avg</div>
+                <div class="stat-number" id="avgExamScore">0%</div>
+            </div>
+        </div>
+
+        <!-- export toolbar -->
+        <div class="filter-bar"
+            style="background:white; border-radius:60px; padding:0.8rem 1.5rem; margin-bottom:2rem; display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+            <i class="fas fa-file-export" style="color:#2d60ff;"></i>
+            <span style="font-weight:500;">Quick export:</span>
+            <button class="btn-outline" onclick="exportTable('students')"><i class="fas fa-users"></i> Students</button>
+            <button class="btn-outline" onclick="exportTable('fees')"><i class="fas fa-coins"></i> Fees</button>
+            <button class="btn-outline" onclick="exportTable('attendance')"><i class="fas fa-calendar-check"></i>
+                Attendance</button>
+            <button class="btn-outline" onclick="exportTable('exams')"><i class="fas fa-pen-to-square"></i>
+                Exams</button>
+            <button class="btn-primary" onclick="exportAllReports()"><i class="fas fa-download"></i> Export All</button>
+        </div>
+
+        <!-- charts -->
+        <div class="chart-row">
+            <div class="chart-card">
+                <div class="chart-header"><span><i class="fas fa-chart-pie"></i> Attendance Distribution</span></div>
+                <canvas id="reportAttendanceChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header"><span><i class="fas fa-chart-bar"></i> Fees Collection Trend</span></div>
+                <canvas id="reportFeesChart"></canvas>
+            </div>
+        </div>
+
+        <!-- STUDENTS TABLE - Pulls from students_data -->
+        <div class="section-title">
+            <h2><i class="fas fa-user-graduate"></i> Student List</h2>
+            <button class="btn-export-sm" onclick="exportTableToCSV('studentsTable', 'students_report.csv')">
+                <i class="fas fa-download"></i> Export CSV
+            </button>
+        </div>
+        <div class="glass-table">
+            <table id="studentsTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Form</th>
+                        <th>Guardian</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                </thead>
+                <tbody id="studentsTableBody">
+                    <tr>
+                        <td colspan="5" style="text-align: center;">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- FEES TABLE - Pulls from fee_records -->
+        <div class="section-title">
+            <h2><i class="fas fa-coins"></i> Fees Summary</h2>
+            <button class="btn-export-sm" onclick="exportTableToCSV('feesTable', 'fees_report.csv')">
+                <i class="fas fa-download"></i> Export CSV
+            </button>
+        </div>
+        <div class="glass-table">
+            <table id="feesTable">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Form</th>
+                        <th>Total Fee (MWK)</th>
+                        <th>Paid (MWK)</th>
+                        <th>Balance (MWK)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="feesTableBody">
+                    <tr>
+                        <td colspan="6" style="text-align: center;">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ATTENDANCE TABLE - Pulls from attendance_records -->
+        <div class="section-title">
+            <h2><i class="fas fa-calendar-check"></i> Attendance History</h2>
+            <button class="btn-export-sm" onclick="exportTableToCSV('attendanceTable', 'attendance_report.csv')">
+                <i class="fas fa-download"></i> Export CSV
+            </button>
+        </div>
+        <div class="glass-table">
+            <table id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Present</th>
+                        <th>Excused</th>
+                        <th>Absent</th>
+                        <th>Total</th>
+                        <th>Rate</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceTableBody">
+                    <tr>
+                        <td colspan="6" style="text-align: center;">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- EXAMS TABLE - Pulls from exam_results -->
+        <div class="section-title">
+            <h2><i class="fas fa-pen-to-square"></i> Exam Results</h2>
+            <button class="btn-export-sm" onclick="exportTableToCSV('examsTable', 'exams_report.csv')">
+                <i class="fas fa-download"></i> Export CSV
+            </button>
+        </div>
+        <div class="glass-table">
+            <table id="examsTable">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Form</th>
+                        <th>Subject</th>
+                        <th>Score (%)</th>
+                        <th>Grade</th>
+                        <th>Term</th>
+                    </tr>
+                </thead>
+                <tbody id="examsTableBody">
+                    <tr>
+                        <td colspan="6" style="text-align: center;">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="js/export.js"></script>
+    <script>
+        // ============ LOAD DATA FROM ALL TABS ============
+
+        // Helper function to get grade
+        function getGrade(score) {
+            if (score >= 80) return { letter: 'A', class: 'score-high' };
+            if (score >= 70) return { letter: 'B', class: 'score-high' };
+            if (score >= 60) return { letter: 'C', class: 'score-medium' };
+            if (score >= 50) return { letter: 'D', class: 'score-medium' };
+            if (score >= 40) return { letter: 'E', class: 'score-low' };
+            return { letter: 'F', class: 'score-low' };
+        }
+
+        // Load Students from students_data
+        function loadStudents() {
+            const students = JSON.parse(localStorage.getItem('students_data')) || [];
+
+            const tbody = document.getElementById('studentsTableBody');
+            if (students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No students found. Add students in Students page.</td></tr>';
+            } else {
+                tbody.innerHTML = students.map(s => `
+                    <tr>
+                        <td><strong>${escapeHtml(s.name)}</strong></td>
+                        <td>${s.form || 'N/A'}</td>
+                        <td>${escapeHtml(s.guardian || 'N/A')}</td>
+                        <td>${s.phone || 'N/A'}</td>
+                        <td><span class="status-badge ${s.status === 'active' ? 'status-paid' : 'status-unpaid'}">${s.status === 'active' ? 'Active' : 'Inactive'}</span></td>
+                    </tr>
+                `).join('');
+            }
+            document.getElementById('totalStudents').textContent = students.length;
+        }
+
+        // Load Fees from fee_records
+        function loadFees() {
+            const feeRecords = JSON.parse(localStorage.getItem('fee_records')) || [];
+
+            const tbody = document.getElementById('feesTableBody');
+            if (feeRecords.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No fee records found. Click "Sync Now" in Fees page.</td></tr>';
+            } else {
+                tbody.innerHTML = feeRecords.map(r => {
+                    let statusClass = '';
+                    let statusText = '';
+                    if (r.balance === 0) {
+                        statusClass = 'status-paid';
+                        statusText = 'Fully Paid';
+                    } else if (r.paid > 0) {
+                        statusClass = 'status-partial';
+                        statusText = 'Partial';
+                    } else {
+                        statusClass = 'status-unpaid';
+                        statusText = 'Unpaid';
+                    }
+                    return `
+                        <tr>
+                            <td><strong>${escapeHtml(r.studentName)}</strong></td>
+                            <td>${r.form || 'N/A'}</td>
+                            <td>MWK ${r.totalFee.toLocaleString()}</td>
+                            <td>MWK ${r.paid.toLocaleString()}</td>
+                            <td style="color: ${r.balance > 0 ? '#e74c3c' : '#2ecc71'}">MWK ${r.balance.toLocaleString()}</td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            const totalCollected = feeRecords.reduce((sum, r) => sum + r.paid, 0);
+            document.getElementById('totalFees').textContent = totalCollected > 0 ? `MWK ${(totalCollected / 1000).toFixed(0)}k` : 'MWK0';
+        }
+
+        // Load Attendance from attendance_records
+        function loadAttendance() {
+            const attendanceRecords = JSON.parse(localStorage.getItem('attendance_records')) || [];
+
+            const tbody = document.getElementById('attendanceTableBody');
+            if (attendanceRecords.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No attendance records found. Mark attendance in Attendance page.</td></tr>';
+            } else {
+                tbody.innerHTML = attendanceRecords.map(record => {
+                    const rate = record.total > 0 ? Math.round(((record.present + (record.excused || 0)) / record.total) * 100) : 0;
+                    return `
+                        <tr>
+                            <td><strong>${record.date}</strong></td>
+                            <td><span class="status-badge status-paid">${record.present || 0}</span></td>
+                            <td><span class="status-badge status-partial">${record.excused || 0}</span></td>
+                            <td><span class="status-badge status-unpaid">${record.absent || 0}</span></td>
+                            <td>${record.total || 0}</td>
+                            <td><strong>${rate}%</strong></td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // Calculate average attendance rate
+            if (attendanceRecords.length > 0) {
+                const totalRate = attendanceRecords.reduce((sum, r) => {
+                    return sum + (r.total > 0 ? ((r.present + (r.excused || 0)) / r.total) * 100 : 0);
+                }, 0);
+                const avgAttendance = Math.round(totalRate / attendanceRecords.length);
+                document.getElementById('avgAttendance').textContent = `${avgAttendance}%`;
+            } else {
+                document.getElementById('avgAttendance').textContent = '0%';
+            }
+        }
+
+        // Load Exams from exam_results
+        function loadExams() {
+            const exams = JSON.parse(localStorage.getItem('exam_results')) || [];
+
+            const tbody = document.getElementById('examsTableBody');
+            if (exams.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No exam results found. Add results in Exams page.</td></tr>';
+            } else {
+                tbody.innerHTML = exams.slice(0, 20).map(e => {
+                    const grade = getGrade(e.score);
+                    return `
+                        <tr>
+                            <td><strong>${escapeHtml(e.student)}</strong></td>
+                            <td>${e.form || 'N/A'}</td>
+                            <td>${e.subject || 'N/A'}</td>
+                            <td><span class="score-badge ${grade.class}">${e.score}%</span></td>
+                            <td><strong>${grade.letter}</strong></td>
+                            <td>${e.term || 'N/A'}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            const avgScore = exams.length > 0 ? Math.round(exams.reduce((sum, e) => sum + e.score, 0) / exams.length) : 0;
+            document.getElementById('avgExamScore').textContent = `${avgScore}%`;
+        }
+
+        // ============ CHARTS with REAL DATA ============
+        let attendanceChart = null;
+        let feesChart = null;
+
+        function initCharts() {
+            // Attendance Chart - from attendance_records
+            const attendanceRecords = JSON.parse(localStorage.getItem('attendance_records')) || [];
+
+            let totalPresent = 0;
+            let totalExcused = 0;
+            let totalAbsent = 0;
+
+            attendanceRecords.forEach(record => {
+                totalPresent += record.present || 0;
+                totalExcused += record.excused || 0;
+                totalAbsent += record.absent || 0;
+            });
+
+            const ctxAttendance = document.getElementById('reportAttendanceChart').getContext('2d');
+            if (attendanceChart) attendanceChart.destroy();
+
+            const totalMarked = totalPresent + totalExcused + totalAbsent;
+            if (totalMarked === 0) {
+                attendanceChart = new Chart(ctxAttendance, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['No Data'],
+                        datasets: [{ data: [1], backgroundColor: ['#e2e8f0'] }]
+                    },
+                    options: { cutout: '65%', plugins: { legend: { position: 'bottom' } } }
+                });
+            } else {
+                attendanceChart = new Chart(ctxAttendance, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [`Present (${totalPresent})`, `Excused (${totalExcused})`, `Absent (${totalAbsent})`],
+                        datasets: [{ data: [totalPresent, totalExcused, totalAbsent], backgroundColor: ['#2ecc71', '#f39c12', '#e74c3c'] }]
+                    },
+                    options: { cutout: '65%', plugins: { legend: { position: 'bottom' } } }
+                });
+            }
+
+            // Fees Chart - from fee_records
+            const feeRecords = JSON.parse(localStorage.getItem('fee_records')) || [];
+
+            // Get monthly fees data (last 6 months)
+            const monthlyData = {};
+            const payments = JSON.parse(localStorage.getItem('fee_payments')) || [];
+
+            payments.forEach(payment => {
+                const month = payment.date.substring(0, 7); // YYYY-MM
+                if (monthlyData[month]) {
+                    monthlyData[month] += payment.amount;
+                } else {
+                    monthlyData[month] = payment.amount;
+                }
+            });
+
+            const months = Object.keys(monthlyData).slice(-6);
+            const feesData = months.map(m => Math.round(monthlyData[m] / 1000));
+
+            const ctxFees = document.getElementById('reportFeesChart').getContext('2d');
+            if (feesChart) feesChart.destroy();
+
+            if (months.length === 0) {
+                feesChart = new Chart(ctxFees, {
+                    type: 'bar',
+                    data: {
+                        labels: ['No Data'],
+                        datasets: [{ label: 'Fees Collected (MWK k)', data: [0], backgroundColor: '#4A90E2' }]
+                    },
+                    options: { responsive: true }
+                });
+            } else {
+                feesChart = new Chart(ctxFees, {
+                    type: 'bar',
+                    data: {
+                        labels: months,
+                        datasets: [{ label: 'Fees Collected (MWK k)', data: feesData, backgroundColor: '#4A90E2', borderRadius: 8 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: true }
+                });
+            }
+        }
+
+        // ============ EXPORT FUNCTIONS ============
+        function exportAllReports() {
+            exportTableToCSV('studentsTable', 'students_report.csv');
+            setTimeout(() => exportTableToCSV('feesTable', 'fees_report.csv'), 300);
+            setTimeout(() => exportTableToCSV('attendanceTable', 'attendance_report.csv'), 600);
+            setTimeout(() => exportTableToCSV('examsTable', 'exams_report.csv'), 900);
+            showToast('Exporting all 4 reports...', 'success');
+        }
+
+        function showToast(message, type) {
+            let toast = document.getElementById('globalToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'globalToast';
+                toast.style.cssText = `
+                    position: fixed; bottom: 20px; right: 20px; background: ${type === 'success' ? '#2ecc71' : '#e74c3c'};
+                    color: white; padding: 12px 20px; border-radius: 40px; z-index: 2000; animation: slideIn 0.3s ease;
+                `;
+                document.body.appendChild(toast);
+            }
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function (m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStudents();
+            loadFees();
+            loadAttendance();
+            loadExams();
+            initCharts();
+        });
+
+        // Make functions global for export.js
+        window.exportAllReports = exportAllReports;
+        window.exportTableToCSV = function (tableId, filename) {
+            const table = document.getElementById(tableId);
+            if (!table) {
+                showToast('Table not found', 'error');
+                return;
+            }
+
+            const rows = table.querySelectorAll('tr');
+            const csv = [];
+
+            const headers = [];
+            rows[0].querySelectorAll('th').forEach(th => {
+                headers.push(`"${th.innerText.trim().replace(/"/g, '""')}"`);
+            });
+            if (headers.length) csv.push(headers.join(','));
+
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].querySelectorAll('td');
+                if (cells.length) {
+                    const rowData = [];
+                    cells.forEach(cell => {
+                        rowData.push(`"${cell.innerText.trim().replace(/"/g, '""')}"`);
+                    });
+                    csv.push(rowData.join(','));
+                }
+            }
+
+            const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            showToast(`Exported ${filename}`, 'success');
+        };
+
+        window.exportTable = function (type) {
+            switch (type) {
+                case 'students': window.exportTableToCSV('studentsTable', 'students_export.csv'); break;
+                case 'fees': window.exportTableToCSV('feesTable', 'fees_export.csv'); break;
+                case 'attendance': window.exportTableToCSV('attendanceTable', 'attendance_export.csv'); break;
+                case 'exams': window.exportTableToCSV('examsTable', 'exams_export.csv'); break;
+                default: showToast('Unknown table type', 'error');
+            }
+        };
+    </script>
+</body>
+
+</html>
